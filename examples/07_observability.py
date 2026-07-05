@@ -14,7 +14,7 @@ without wasted steps?
 
 Run it:
 
-    python examples/07_observability.py
+    secrun python examples/07_observability.py
 """
 
 import os

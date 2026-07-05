@@ -20,7 +20,7 @@ calls, times sequential vs. parallel execution, then STREAMS the final answer.
 
 Run it:
 
-    python examples/13_parallel_and_streaming.py
+    secrun python examples/13_parallel_and_streaming.py
 """
 
 import os

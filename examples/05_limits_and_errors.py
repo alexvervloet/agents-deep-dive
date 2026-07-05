@@ -18,7 +18,7 @@ max_steps cuts a multi-step task short.)
 
 Run it:
 
-    python examples/05_limits_and_errors.py
+    secrun python examples/05_limits_and_errors.py
 """
 
 import os

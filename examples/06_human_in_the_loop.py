@@ -16,8 +16,8 @@ This example is interactive: it asks YOU to approve at the terminal.
 
 Run it:
 
-    python examples/06_human_in_the_loop.py
-    python examples/06_human_in_the_loop.py "Save a note titled 'Ideas' with body 'try the new editor'"
+    secrun python examples/06_human_in_the_loop.py
+    secrun python examples/06_human_in_the_loop.py "Save a note titled 'Ideas' with body 'try the new editor'"
 """
 
 import os

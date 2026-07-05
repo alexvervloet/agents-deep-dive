@@ -21,8 +21,8 @@ see the prompt-engineering 'reflexion' lesson and the evals dive.)
 
 Run it:
 
-    python examples/12_planning_reflection.py
-    python examples/12_planning_reflection.py "Compare the Free and Plus plans, and compute the yearly cost of Plus."
+    secrun python examples/12_planning_reflection.py
+    secrun python examples/12_planning_reflection.py "Compare the Free and Plus plans, and compute the yearly cost of Plus."
 """
 
 import os

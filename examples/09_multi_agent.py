@@ -17,8 +17,8 @@ a whole second loop runs. Each agent stays focused on its own job.
 
 Run it:
 
-    python examples/09_multi_agent.py
-    python examples/09_multi_agent.py "What does a year of Team cost for 3 users?"
+    secrun python examples/09_multi_agent.py
+    secrun python examples/09_multi_agent.py "What does a year of Team cost for 3 users?"
 """
 
 import os

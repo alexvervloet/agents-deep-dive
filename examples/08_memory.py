@@ -15,7 +15,7 @@ This is a small REPL. Try a follow-up that only makes sense with memory:
 
 Run it (type 'quit' to exit):
 
-    python examples/08_memory.py
+    secrun python examples/08_memory.py
 """
 
 import os

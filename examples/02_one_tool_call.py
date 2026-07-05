@@ -14,7 +14,7 @@ normally you'd just use run_agent.)
 
 Run it:
 
-    python examples/02_one_tool_call.py
+    secrun python examples/02_one_tool_call.py
 """
 
 import os

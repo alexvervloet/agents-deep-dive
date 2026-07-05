@@ -23,8 +23,8 @@ the agent earns its keep only when the task is genuinely open-ended.
 
 Run it:
 
-    python examples/11_workflows_vs_agents.py
-    python examples/11_workflows_vs_agents.py "my invoice looks wrong and the export button is broken"
+    secrun python examples/11_workflows_vs_agents.py
+    secrun python examples/11_workflows_vs_agents.py "my invoice looks wrong and the export button is broken"
 """
 
 import os

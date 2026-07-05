@@ -31,8 +31,8 @@ cleanly rather than crashing.
 
 Run it:
 
-    python examples/15_hosted_tools.py
-    python examples/15_hosted_tools.py "Who won the most recent Formula 1 race?"
+    secrun python examples/15_hosted_tools.py
+    secrun python examples/15_hosted_tools.py "Who won the most recent Formula 1 race?"
 """
 
 import os

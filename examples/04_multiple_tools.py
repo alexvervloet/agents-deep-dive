@@ -13,8 +13,8 @@ to say when each applies. Watch the trace: search first, then calculator.
 
 Run it:
 
-    python examples/04_multiple_tools.py
-    python examples/04_multiple_tools.py "Is offline editing on Free, and what's Team's yearly price per user?"
+    secrun python examples/04_multiple_tools.py
+    secrun python examples/04_multiple_tools.py "Is offline editing on Free, and what's Team's yearly price per user?"
 """
 
 import os

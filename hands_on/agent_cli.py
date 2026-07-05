@@ -12,16 +12,16 @@ interactive chat that remembers the conversation.
 Examples
 --------
   # One-off task
-  python hands_on/agent_cli.py "What's a year of the Plus plan, and is offline editing included?"
+  secrun python hands_on/agent_cli.py "What's a year of the Plus plan, and is offline editing included?"
 
   # Watch every step it takes
-  python hands_on/agent_cli.py "What is 19% of 240?" --trace
+  secrun python hands_on/agent_cli.py "What is 19% of 240?" --trace
 
   # Interactive chat with memory (type 'quit' to exit)
-  python hands_on/agent_cli.py
+  secrun python hands_on/agent_cli.py
 
   # Let it save notes without prompting you each time
-  python hands_on/agent_cli.py "Save a note titled 'todo' with body 'ship the repo'" --yes
+  secrun python hands_on/agent_cli.py "Save a note titled 'todo' with body 'ship the repo'" --yes
 
 The agent only asks permission for *dangerous* tools (save_note writes a file);
 the calculator and search run freely.

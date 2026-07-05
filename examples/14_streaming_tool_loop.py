@@ -19,7 +19,7 @@ every turn, so you can watch the agent think between tool calls.
 
 Run it:
 
-    python examples/14_streaming_tool_loop.py
+    secrun python examples/14_streaming_tool_loop.py
 """
 
 import os

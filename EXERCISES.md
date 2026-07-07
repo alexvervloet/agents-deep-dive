@@ -8,8 +8,8 @@ How to use it: work the section first, then come back. **Commit to an answer
 before you run or reveal** — the prediction is where the learning happens. Answers
 are hidden behind ▸ toggles.
 
-> Example 01 is **(offline)** — no API call, no cost. The rest make small, cheap
-> calls.
+> Examples 01 and 10 are **(offline)** — no API call, no cost. The rest make
+> small, cheap calls.
 
 ---
 
@@ -177,7 +177,7 @@ tools. Sub-agents are agents wrapped as tools; that's how large systems decompos
 
 ## Capstone — `agent_cli.py`
 
-**Do.** Run `python hands_on/agent_cli.py "Save a note titled 'todo' with body 'x'"`
+**Do.** Run `secrun python hands_on/agent_cli.py "Save a note titled 'todo' with body 'x'"`
 and deny the approval prompt. Then run it again with `--yes`. Then add `--trace` to
 either. You've now exercised the loop, the approval gate, and observability in one
 tool.
@@ -264,6 +264,40 @@ approval gate can't reach it, and you can't custom-log, validate, or sandbox it.
 gain **zero plumbing** — no schema, no execution, no result round-trip. Real agents
 mix both: client tools for actions you must govern, hosted tools (web search, code
 execution) for capability you're happy to rent.
+</details>
+
+---
+
+## Bonus — MCP: a tool you didn't ship with **(offline)**
+
+**Predict (`10`).** The client turns each remote tool descriptor into an ordinary
+`Tool` object and hands it to the loop. When the agent later "runs" one, what does
+that tool's `func` actually do — and could `run_agent` from example 03 tell the
+difference from a local tool?
+
+<details><summary>▸ Answer</summary>
+
+The `func` is a closure that sends a `tools/call` request over the protocol (JSON
+lines over the server's stdin/stdout) and reads the text content blocks back. The
+loop *can't* tell the difference — the converted tool has the same name,
+description, schema, and callable shape as a local one, so tracing and approval
+gates apply unchanged. That's the payoff of the conversion step: the transport is
+invisible to the loop.
+</details>
+
+**Recall.** Example 01 said a tool is "a name, a description, and a JSON Schema."
+What does MCP add to that picture — and what still never happens, whether the tool
+is local or served across the world?
+
+<details><summary>▸ Answer</summary>
+
+MCP adds **discovery and a wire format**: `tools/list` advertises those same three
+things from another process (another team, another language, another machine), and
+`tools/call` invokes one by name with JSON arguments — no bespoke glue per tool.
+What never changes: the *model* still never runs anything — it only ever sees the
+menu entry and emits a request. Now even your client doesn't hold the
+implementation; the server does. (For the protocol's other primitives — resources,
+prompts, HTTP transport, security — see the MCP deep dive.)
 </details>
 
 ---

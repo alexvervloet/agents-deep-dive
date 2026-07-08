@@ -12,13 +12,13 @@ chains calls: it uses one result to decide the next.
 
 Run it:
 
-    python examples/03_agent_loop.py
-    python examples/03_agent_loop.py "What is 15% of 240, plus 7 squared?"
+    secrun python examples/03_agent_loop.py
+    secrun python examples/03_agent_loop.py "What is 15% of 240, plus 7 squared?"
 
 Then run the SAME question against a different model and watch the trace change:
 
-    PROVIDER=openai python examples/03_agent_loop.py
-    PROVIDER=claude python examples/03_agent_loop.py
+    PROVIDER=openai secrun python examples/03_agent_loop.py
+    PROVIDER=claude secrun python examples/03_agent_loop.py
 
 The loop, the tools, and the question are identical — but the number of tool
 calls is not. One model may break `(23 * 47) + (88 / 4)` into four separate

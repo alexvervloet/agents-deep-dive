@@ -8,9 +8,9 @@ LangChain, no SDK tool-runners, no framework magic — just enough code to *see*
 an agent thinks.
 
 This is the sixth of eight core repos in the series, and the one where the building blocks converge. The
-first two teach the API calls ([OpenAI](https://github.com/Ailuue/openai-api-deep-dive),
-[Claude](https://github.com/Ailuue/claude-api-deep-dive)); [prompt engineering](https://github.com/Ailuue/prompt-engineering-deep-dive) sharpens how you ask; [RAG](https://github.com/Ailuue/rag-deep-dive) adds
-retrieval; [evals](https://github.com/Ailuue/evals-deep-dive) measures quality. An agent *uses*
+first two teach the API calls ([OpenAI](https://github.com/alexvervloet/openai-api-deep-dive),
+[Claude](https://github.com/alexvervloet/claude-api-deep-dive)); [prompt engineering](https://github.com/alexvervloet/prompt-engineering-deep-dive) sharpens how you ask; [RAG](https://github.com/alexvervloet/rag-deep-dive) adds
+retrieval; [evals](https://github.com/alexvervloet/evals-deep-dive) measures quality. An agent *uses*
 all of it: it calls the API in a loop, its tools can include RAG retrieval, and
 its step-by-step behavior is exactly what you'd evaluate. Tools + loop is the
 pattern under "AI agents," and once you've written it by hand, the frameworks stop
@@ -45,12 +45,13 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Choose your provider and add your key
+# 3. Choose your provider (set PROVIDER in .env); your key loads separately
 cp .env.example .env
-#    ...then open .env. Set PROVIDER to "openai" or "claude" and paste the key.
+#    Your API key does NOT go in .env. Store it in your OS keychain and run
+#    lessons with `secrun` — 2-minute setup in ../SECRETS.md.
 
 # 4. Confirm everything is wired up (makes no API call, costs nothing)
-python check_setup.py
+secrun python check_setup.py       # secrun injects your key so the check can see it
 ```
 
 Agents are provider-agnostic, so this repo is too — pick whichever stack you set up
@@ -99,7 +100,7 @@ of answering it replies "please run `calculator` with `expression='23 * 47'`."
 That's a request — you run it.
 
 ```bash
-python examples/02_one_tool_call.py
+secrun python examples/02_one_tool_call.py
 ```
 
 This does exactly one turn so you can see the request shape clearly (normalized to
@@ -114,7 +115,7 @@ Repeat that one turn — run the tool, feed the result back, ask again — until
 model stops asking. That loop is the agent.
 
 ```bash
-python examples/03_agent_loop.py
+secrun python examples/03_agent_loop.py
 ```
 
 `run_agent` in [agent/loop.py](agent/loop.py) is about twenty lines. Watch the
@@ -130,7 +131,7 @@ Give the agent more than one tool and it routes each sub-task to the right one a
 chains them.
 
 ```bash
-python examples/04_multiple_tools.py
+secrun python examples/04_multiple_tools.py
 ```
 
 Asked "what does the Plus plan cost per year?", it calls `search_notes` for the
@@ -145,7 +146,7 @@ An unsupervised loop needs guardrails. Two essential ones are built into
 `run_agent`:
 
 ```bash
-python examples/05_limits_and_errors.py
+secrun python examples/05_limits_and_errors.py
 ```
 
 - **`max_steps`** — a hard ceiling, so a confused agent stops and says so instead
@@ -164,7 +165,7 @@ those tools `dangerous=True` and pass an `approve` callback; the loop asks befor
 running them.
 
 ```bash
-python examples/06_human_in_the_loop.py     # interactive
+secrun python examples/06_human_in_the_loop.py     # interactive
 ```
 
 `save_note` is dangerous, so you're prompted; the calculator and search run freely.
@@ -179,12 +180,12 @@ An agent makes its own decisions, so when it misbehaves you need the trace: whic
 tool, what arguments, what result, at each step.
 
 ```bash
-python examples/07_observability.py
+secrun python examples/07_observability.py
 ```
 
 You've seen the live `Tracer`; this also shows the same steps after the fact from
 `result.steps` — the structured record you'd log in production and feed to an eval
-(see the [evals repo](https://github.com/Ailuue/evals-deep-dive)) to score whether the agent called the
+(see the [evals repo](https://github.com/alexvervloet/evals-deep-dive)) to score whether the agent called the
 right tools in a sensible order.
 
 ---
@@ -197,7 +198,7 @@ and appends to it in place, so passing the same list across turns gives the agen
 memory.
 
 ```bash
-python examples/08_memory.py          # interactive REPL
+secrun python examples/08_memory.py          # interactive REPL
 ```
 
 Ask it to "search the plans," then "which is cheapest?" — the follow-up only works
@@ -212,7 +213,7 @@ sub-agent is not a new mechanism — it's a tool whose function happens to run i
 own loop, with its own prompt and toolset.
 
 ```bash
-python examples/09_multi_agent.py
+secrun python examples/09_multi_agent.py
 ```
 
 An orchestrator delegates factual questions to a `research` sub-agent (tools:
@@ -230,16 +231,16 @@ memory-keeping interactive mode.
 
 ```bash
 # One-off task
-python hands_on/agent_cli.py "What's a year of the Plus plan, and is offline editing included?"
+secrun python hands_on/agent_cli.py "What's a year of the Plus plan, and is offline editing included?"
 
 # Watch every step
-python hands_on/agent_cli.py "What is 19% of 240?" --trace
+secrun python hands_on/agent_cli.py "What is 19% of 240?" --trace
 
 # Interactive chat with memory (type 'quit' to exit)
-python hands_on/agent_cli.py
+secrun python hands_on/agent_cli.py
 
 # Save notes without being prompted each time
-python hands_on/agent_cli.py "Save a note titled 'todo' with body 'ship the repo'" --yes
+secrun python hands_on/agent_cli.py "Save a note titled 'todo' with body 'ship the repo'" --yes
 ```
 
 Read [hands_on/agent_cli.py](hands_on/agent_cli.py) — it's just the library wired to a CLI.
@@ -260,7 +261,7 @@ predictable, and easier to test. Reach for an **agent** (the model drives the lo
 only when the path genuinely can't be known up front. The example does one support
 task both ways.
 ```bash
-python examples/11_workflows_vs_agents.py
+secrun python examples/11_workflows_vs_agents.py
 ```
 
 ### Planning & reflection
@@ -270,7 +271,7 @@ run a **reflection** pass after (a critic catches half-answers, then revises). B
 when the critic is grounded in a real check — see the prompt-engineering "reflexion"
 lesson and the evals dive.
 ```bash
-python examples/12_planning_reflection.py
+secrun python examples/12_planning_reflection.py
 ```
 
 ### Parallel tool calls & streaming
@@ -279,7 +280,7 @@ When the model requests several *independent* tool calls in one turn, run them
 is an ordinary completion, so **stream** it token by token for instant, responsive
 output. The example times sequential vs. parallel execution, then streams the answer.
 ```bash
-python examples/13_parallel_and_streaming.py
+secrun python examples/13_parallel_and_streaming.py
 ```
 
 ### Streaming *inside* the loop
@@ -290,7 +291,7 @@ swap `run_turn` for `stream_turn`, which prints text deltas live and still hands
 the normalized tool calls (reassembling streamed tool-call fragments is the one fiddly
 bit, kept in `agent/providers.py`). This is the pattern most production assistants use.
 ```bash
-python examples/14_streaming_tool_loop.py
+secrun python examples/14_streaming_tool_loop.py
 ```
 
 ### Provider-hosted tools — the loop never sees it
@@ -304,7 +305,7 @@ search really ran (the provider did it), but your code handled **zero** tool rou
 The tradeoff is control for plumbing — a hosted tool can't be gated (Section 7),
 custom-logged, or sandboxed, but it needs no glue. Real agents mix both.
 ```bash
-python examples/15_hosted_tools.py       # small real call; degrades cleanly if the tool isn't enabled
+secrun python examples/15_hosted_tools.py       # small real call; degrades cleanly if the tool isn't enabled
 ```
 
 ---
@@ -348,7 +349,7 @@ more capability and rigor:
 
 - **Build on a harness** — the whole next step. Most agent work in 2026 is building
   *on* a harness (hooks, permission policies, sandboxing, subagents, headless runs)
-  rather than hand-rolling the loop. The **[Agent Harnesses dive](https://github.com/Ailuue/agent-harness-deep-dive)**
+  rather than hand-rolling the loop. The **[Agent Harnesses dive](https://github.com/alexvervloet/agent-harness-deep-dive)**
   builds one from scratch and covers when to throw away your loop for the SDK,
   plus computer use and hosted sandboxes.
 - **MCP at scale** — you built the protocol by hand above; the official `mcp` SDK,
@@ -363,7 +364,7 @@ more capability and rigor:
 - **Production hardening** — sandboxing tool execution, tighter permission
   policies, budgets/timeouts, retries, and structured logging/tracing.
 - **Evaluating agents** — scoring trajectories (right tools, right order, no wasted
-  steps), not just final answers — exactly what the [evals repo](https://github.com/Ailuue/evals-deep-dive)
+  steps), not just final answers — exactly what the [evals repo](https://github.com/alexvervloet/evals-deep-dive)
   is for.
 - **SDK tool-runners** — now that you've written the loop by hand, the official
   SDKs' tool-runner helpers will read as conveniences, not magic.
@@ -391,7 +392,7 @@ it runs unattended:
 These shortcuts are right for learning and wrong for production. All seven
 concerns — observability, cost, reliability, caching, guardrails, prompt
 versioning, and eval gates — are built from scratch and wired into one running
-app in **[Production](https://github.com/Ailuue/ai-in-production-deep-dive)** (#8 in the
+app in **[Production](https://github.com/alexvervloet/ai-in-production-deep-dive)** (#8 in the
 series). It runs **offline on a mock provider**, so you can see the whole ops
 machinery with no key and no cost.
 
@@ -434,11 +435,11 @@ examples/
 
 ## Troubleshooting
 
-Run `python check_setup.py` first — it catches most problems. Then, by symptom:
+Run `secrun python check_setup.py` first — it catches most problems. Then, by symptom:
 
 | What you see | What it means / the fix |
 |--------------|-------------------------|
-| `PROVIDER=... needs ... in .env` | The active stack is missing its key. Set `PROVIDER` and the matching key in `.env`. |
+| `PROVIDER=... needs ... in the environment` | Set `PROVIDER` in `.env`, then load the key from your keychain by running under `secrun` — see [SECRETS.md](../SECRETS.md). |
 | `ModuleNotFoundError` (openai / anthropic / rich) | Dependencies aren't installed or the venv isn't active. `source .venv/bin/activate` then `pip install -r requirements.txt`. |
 | The agent answers math wrong / makes things up | It's not using its tools. Strengthen the system prompt ("use the calculator for arithmetic; don't guess product facts") — tool *descriptions and instructions* drive tool use. |
 | "(stopped: reached the step limit...)" | The task needed more steps than `max_steps`. Raise it (`--max-steps` on the capstone), or simplify the task. |
@@ -452,29 +453,30 @@ at the top, and run it directly. The loop in `agent/loop.py` is the whole story.
 
 ## The series
 
-This is one of thirteen standalone, hands-on deep dives into building with LLM APIs — eight core, plus five bonus dives.
+This is one of sixteen standalone, hands-on deep dives into building with LLM APIs — eight core, plus eight bonus dives.
 Each one stands on its own — its own setup, examples, and capstone — and they all
 share the same house style: provider-agnostic, built from scratch (no
 frameworks), offline-first examples, and a real capstone. Do them in any order;
 this sequence builds naturally:
 
-1. [OpenAI API](https://github.com/Ailuue/openai-api-deep-dive) — the API from zero
-2. [Claude API](https://github.com/Ailuue/claude-api-deep-dive) — the same ideas, the Anthropic way
-3. [Prompt Engineering](https://github.com/Ailuue/prompt-engineering-deep-dive) — shape model behavior with better prompts (zero/few-shot, chain-of-thought, roles)
-4. [RAG](https://github.com/Ailuue/rag-deep-dive) — answer questions over your own documents
-5. [Evals](https://github.com/Ailuue/evals-deep-dive) — measure whether a change actually helps
-6. [Agents](https://github.com/Ailuue/agents-deep-dive) — give a model tools and a loop so it can act
-7. [Prompt Injection & Guardrails](https://github.com/Ailuue/prompt-injection-deep-dive) — attack and defend all of the above
-8. [Production](https://github.com/Ailuue/ai-in-production-deep-dive) — operate one app end to end: observability, cost, reliability, caching, guardrails, prompt versioning, eval gates
+1. [OpenAI API](https://github.com/alexvervloet/openai-api-deep-dive) — the API from zero
+2. [Claude API](https://github.com/alexvervloet/claude-api-deep-dive) — the same ideas, the Anthropic way
+3. [Prompt Engineering](https://github.com/alexvervloet/prompt-engineering-deep-dive) — shape model behavior with better prompts (zero/few-shot, chain-of-thought, roles)
+4. [RAG](https://github.com/alexvervloet/rag-deep-dive) — answer questions over your own documents
+5. [Evals](https://github.com/alexvervloet/evals-deep-dive) — measure whether a change actually helps
+6. [Agents](https://github.com/alexvervloet/agents-deep-dive) — give a model tools and a loop so it can act
+7. [Prompt Injection & Guardrails](https://github.com/alexvervloet/prompt-injection-deep-dive) — attack and defend all of the above
+8. [Production](https://github.com/alexvervloet/ai-in-production-deep-dive) — operate one app end to end: observability, cost, reliability, caching, guardrails, prompt versioning, eval gates
 
 **Bonus dives** — standalone, slotting in where they're most useful:
 
-- [Context Engineering](https://github.com/Ailuue/context-engineering-deep-dive) — manage what's in the window: memory, compaction, assembly
-- [Multimodal](https://github.com/Ailuue/multimodal-deep-dive) — images & audio, not just text
-- [Fine-tuning](https://github.com/Ailuue/fine-tuning-deep-dive) — teach a model new behavior by example
-- [MCP](https://github.com/Ailuue/mcp-deep-dive) — serve tools, data & prompts to any LLM over a standard protocol
-- [Local Models](https://github.com/Ailuue/local-models-deep-dive) — run open-weight models on your own machine
-- [Agent Harnesses](https://github.com/Ailuue/agent-harness-deep-dive) — build on the loop: hooks, permissions, sandboxing, subagents
-- [Realtime Voice](https://github.com/Ailuue/realtime-voice-deep-dive) — low-latency speech-to-speech agents
+- [Context Engineering](https://github.com/alexvervloet/context-engineering-deep-dive) — manage what's in the window: memory, compaction, assembly
+- [Multimodal](https://github.com/alexvervloet/multimodal-deep-dive) — images & audio, not just text
+- [Fine-tuning](https://github.com/alexvervloet/fine-tuning-deep-dive) — teach a model new behavior by example
+- [MCP](https://github.com/alexvervloet/mcp-deep-dive) — serve tools, data & prompts to any LLM over a standard protocol
+- [Local Models](https://github.com/alexvervloet/local-models-deep-dive) — run open-weight models on your own machine
+- [Agent Harnesses](https://github.com/alexvervloet/agent-harness-deep-dive) — build on the loop: hooks, permissions, sandboxing, subagents
+- [Realtime Voice](https://github.com/alexvervloet/realtime-voice-deep-dive) — low-latency speech-to-speech agents
+- [Observability](https://github.com/alexvervloet/observability-deep-dive) — watch a running app over time: drift, quality, alerting, the flywheel
 
 **You are here: #6 — Agents.**

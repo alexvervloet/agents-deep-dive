@@ -1,6 +1,5 @@
 """
-agent/loop.py — the agent loop. This is the whole idea.
-=======================================================
+agent/loop.py: the agent loop. This is the whole idea.
 
 Strip away the vocabulary and an agent is a `while` loop:
 
@@ -9,10 +8,10 @@ Strip away the vocabulary and an agent is a `while` loop:
     if it asked to call tools:
         run them, append the results, loop again
     else:
-        it gave a final answer — stop
+        it gave a final answer, stop
 
-That's `run_agent` below, in ~20 lines. Everything else in this repo — multiple
-tools, error recovery, approval gates, tracing, memory, sub-agents — is a small
+That's `run_agent` below, in ~20 lines. Everything else in this repo (multiple
+tools, error recovery, approval gates, tracing, memory, sub-agents) is a small
 addition to this loop, not a new concept.
 
 Three pieces of control logic worth seeing here, because they're what make a loop
@@ -21,7 +20,7 @@ safe instead of a runaway:
   - max_steps: a hard ceiling so a confused model can't loop forever.
   - error handling: a tool that raises returns its error *as the result*, so the
     model can see what went wrong and try something else instead of crashing.
-  - approval: a `dangerous` tool can be gated behind an `approve` callback — the
+  - approval: a `dangerous` tool can be gated behind an `approve` callback, so the
     human-in-the-loop. A denied call comes back as a normal result, and the agent
     adapts.
 """
@@ -92,7 +91,7 @@ def run_agent(
       tool whose `dangerous` flag is set. Return False to deny.
     - `tracer`: optional Tracer to print each step.
     - `history`: optional message list. Pass the SAME list across calls to give the
-      agent memory of earlier turns — the loop appends this turn's messages to it
+      agent memory of earlier turns. The loop appends this turn's messages to it
       in place. Omit it for a one-shot run. (The API itself is stateless; "memory"
       is just you re-sending the growing list, exactly as in the sibling repos.)
     """

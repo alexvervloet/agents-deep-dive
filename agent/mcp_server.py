@@ -1,17 +1,16 @@
 """
-agent/mcp_server.py — a tiny tool server that speaks MCP, from scratch.
-======================================================================
+agent/mcp_server.py: a tiny tool server that speaks MCP, from scratch.
 
 MCP (the Model Context Protocol) answers one question: *how does an agent use a
 tool it didn't ship with?* In this repo a tool is a Python object the agent
 imports directly (`agent/tools.py`). That's fine until the tool lives somewhere
-else — another team's service, a vendor's product, a process in another language.
+else: another team's service, a vendor's product, a process in another language.
 MCP standardizes the wire format so any agent can talk to any tool server: the
 server advertises its tools, and the client calls them, over one agreed protocol.
 
 This file is a real (if minimal) MCP-style server. It speaks the actual MCP
-shapes — JSON-RPC 2.0 over stdio, the `tools/list` and `tools/call` methods, the
-`inputSchema` field, and `content` blocks back — but built from scratch with the
+shapes (JSON-RPC 2.0 over stdio, the `tools/list` and `tools/call` methods, the
+`inputSchema` field, and `content` blocks back) but built from scratch with the
 standard library so you can *see* the protocol instead of importing an SDK. The
 tools it serves are the very same functions from `agent/tools.py`; the only thing
 that changed is they're now reachable over a protocol instead of an import.
@@ -22,7 +21,7 @@ Run it directly to poke at it by hand:
     {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
     {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "calculator", "arguments": {"expression": "6 * 7"}}}
 
-But normally you don't type at it — `examples/10_mcp.py` launches it as a
+But normally you don't type at it; `examples/10_mcp.py` launches it as a
 subprocess and drives it as a client. Protocol traffic goes on stdout; anything
 human is logged to stderr so it never corrupts the channel.
 """
@@ -35,14 +34,14 @@ import sys
 # (`python agent/mcp_server.py`) or spawned as a subprocess by the client.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# The tools we expose are the SAME functions the rest of the repo uses — we're
+# The tools we expose are the SAME functions the rest of the repo uses: we're
 # only changing how they're *reached* (a protocol), not what they *are*.
 from agent.tools import CALCULATOR, SEARCH_NOTES
 
 
 # Map a tool name to (MCP descriptor, the function that runs it). MCP uses
 # `inputSchema` (camelCase) where this repo's Tool uses `parameters`; same JSON
-# Schema, different key — so we translate once, here.
+# Schema, different key: so we translate once, here.
 def _descriptor(tool):
     return {
         "name": tool.name,
@@ -93,7 +92,7 @@ def handle(request: dict) -> dict | None:
         return _result(request_id, {"content": [{"type": "text", "text": str(output)}]})
 
     if request_id is None:
-        return None  # a notification (no id) — nothing to reply
+        return None  # a notification (no id), nothing to reply
     return _error(request_id, -32601, f"unknown method {method!r}")
 
 

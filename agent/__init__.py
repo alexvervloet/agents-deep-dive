@@ -1,13 +1,13 @@
 """
-agent — a small, from-scratch agent framework.
+agent: a small, from-scratch agent framework.
 
 Built to be *read*. The pieces:
 
-  tools.py      — what a tool is (name + description + schema + function), and a
+  tools.py      what a tool is (name + description + schema + function), and a
                   safe default toolbox (calculator, search_notes, save_note)
-  providers.py  — the ONLY provider-specific file: normalizes a tool-calling turn
+  providers.py  the ONLY provider-specific file: normalizes a tool-calling turn
                   across the openai/claude stacks
-  loop.py       — run_agent: the while-loop that IS the agent, plus a Tracer
+  loop.py       run_agent: the while-loop that IS the agent, plus a Tracer
 
 Typical use:
 

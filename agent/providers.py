@@ -1,10 +1,9 @@
 """
-agent/providers.py — the ONLY provider-specific file.
-=====================================================
+agent/providers.py: the ONLY provider-specific file.
 
 Agents are an architecture, not a provider feature: the loop, the tools, the
 control logic are all provider-agnostic. The one thing that genuinely differs
-between providers is the *shape* of a tool-calling turn — how you describe tools,
+between providers is the *shape* of a tool-calling turn: how you describe tools,
 how the model hands back a tool request, and how you send a result. This file
 normalizes all of that to a tiny neutral interface the rest of the repo uses:
 
@@ -98,7 +97,7 @@ def _anthropic_client():
 
 
 def user_message(text: str) -> dict:
-    """A plain user message — same shape on both providers."""
+    """A plain user message, the same shape on both providers."""
     return {"role": "user", "content": text}
 
 
@@ -166,7 +165,7 @@ def stream_turn(system: str, history: list, tool_schema: list, on_text=None) -> 
 
     Calls `on_text(piece)` for each text delta so the caller can print tokens live,
     then returns the same normalized `Turn` (text + any tool calls + the message to
-    append). This is what lets you stream *inside* the loop — the user watches the
+    append). This is what lets you stream *inside* the loop, so the user watches the
     agent's words appear even on a turn that ends in a tool call, not just on the
     final answer.
 
@@ -243,7 +242,7 @@ class HostedResult:
     """The outcome of a provider-hosted tool call (see hosted_web_search).
 
     `text` is the final answer. `server_tool_calls` is how many times the
-    *provider* ran the tool inside the turn — proof that the work happened, even
+    *provider* ran the tool inside the turn: proof that the work happened, even
     though your code never saw a tool request or sent a result back."""
 
     text: str
@@ -255,7 +254,7 @@ def hosted_web_search(query: str) -> HostedResult:
 
     Every tool in examples 01–14 is *client-executed*: the model asks, your loop
     runs the function, you feed the result back. A hosted (server-side) tool is
-    different in kind — you declare it and the provider runs it *inside the turn*,
+    different in kind: you declare it and the provider runs it *inside the turn*,
     on its own infrastructure. One request goes out; one final answer comes back,
     already grounded in live search results. There is no tool_use/tool_result
     round-trip for your loop to manage, because the loop isn't in the middle.
@@ -270,7 +269,7 @@ def hosted_web_search(query: str) -> HostedResult:
     if p == "openai":
         # The Responses API runs `web_search` server-side and returns the final
         # text directly. Search steps appear as `web_search_call` items in the
-        # output — we count them — but you never handle a tool result yourself.
+        # output (we count them) but you never handle a tool result yourself.
         resp = _openai_client().responses.create(
             model=_OPENAI_CHAT, tools=[{"type": "web_search"}], input=query
         )
@@ -280,7 +279,7 @@ def hosted_web_search(query: str) -> HostedResult:
     if p == "claude":
         # Declaring the web_search tool lets Claude run it during the turn. The
         # response interleaves `server_tool_use` / `web_search_tool_result` blocks
-        # with the text — again, no round-trip for your code.
+        # with the text; again, no round-trip for your code.
         resp = _anthropic_client().messages.create(
             model=_CLAUDE_CHAT,
             max_tokens=1024,

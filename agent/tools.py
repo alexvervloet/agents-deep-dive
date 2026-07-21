@@ -1,9 +1,8 @@
 """
-agent/tools.py — the toolbox.
-=============================
+agent/tools.py: the toolbox.
 
 A *tool* is the bridge between the model and the world. To the model it's just a
-name, a description, and a JSON Schema of inputs — that's all it sees, and all it
+name, a description, and a JSON Schema of inputs. That's all it sees, and all it
 needs to decide *when* and *how* to call the tool. To your program it's an
 ordinary Python function. The model never runs anything itself; it only *asks*,
 and your code chooses whether and how to execute. That gap is where all of an
@@ -11,11 +10,11 @@ agent's safety lives.
 
 We ship three tools, chosen to exercise the important ideas:
 
-  - calculator   — pure, safe, deterministic. Good for multi-step reasoning.
-  - search_notes — read-only lookup over a tiny built-in knowledge base (the same
+  - calculator   pure, safe, deterministic. Good for multi-step reasoning.
+  - search_notes read-only lookup over a tiny built-in knowledge base (the same
                    "Nimbus Notes" facts from the RAG repo). A real agent would
                    call your RAG pipeline here.
-  - save_note    — WRITES a file. Marked `dangerous=True`, so the loop can require
+  - save_note    WRITES a file. Marked `dangerous=True`, so the loop can require
                    human approval before it runs (see example 06).
 
 These are deliberately offline and side-effect-free (except save_note, which only
@@ -91,7 +90,7 @@ _KNOWLEDGE_BASE = {
 
 def search_notes(query: str) -> str:
     """Return the most relevant knowledge-base entries for a query (keyword
-    overlap — a stand-in for a real RAG retrieval call)."""
+    overlap, a stand-in for a real RAG retrieval call)."""
     q = set(re.findall(r"[a-z0-9]+", query.lower()))
     scored = []
     for key, text in _KNOWLEDGE_BASE.items():

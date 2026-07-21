@@ -1,21 +1,20 @@
 """
-Example 12 — planning & reflection: think before, check after.
-==============================================================
+Example 12: planning & reflection: think before, check after.
 
 The bare loop (example 03) reacts step by step. Two cheap additions make it far
-more reliable on hard, multi-part tasks — and both are just extra LLM passes around
+more reliable on hard, multi-part tasks, and both are just extra LLM passes around
 the loop:
 
   PLAN (before): ask the model to break the task into a short, explicit plan first.
     A written plan keeps a long task on track and stops the agent from forgetting a
     sub-goal halfway through. You then run the loop *against* that plan.
 
-  REFLECT (after): once the agent produces an answer, run a critic pass — "does this
-    fully and correctly answer the question? if not, what's missing?" — and let it
+  REFLECT (after): once the agent produces an answer, run a critic pass: "does this
+    fully and correctly answer the question? if not, what's missing?" Then let it
     revise. Catches the half-answers and arithmetic slips a single pass misses.
 
 This script plans a multi-part task, executes it with the tool-using loop, then
-reflects and (if needed) revises. (The critic here is the model judging itself —
+reflects and (if needed) revises. (The critic here is the model judging itself 
 useful but fallible; the strongest version checks against a real verifier or tests,
 see the prompt-engineering 'reflexion' lesson and the evals dive.)
 
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     # 2) EXECUTE against the plan, using the tool loop.
     system = (
         "You are a careful assistant. Follow the given plan. Use search_notes for "
-        "product facts and the calculator for arithmetic — never guess at numbers.\n\n"
+        "product facts and the calculator for arithmetic. Never guess at numbers.\n\n"
         f"PLAN:\n{the_plan}"
     )
     print("Execution trace:")

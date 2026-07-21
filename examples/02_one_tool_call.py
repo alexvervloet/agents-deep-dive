@@ -1,14 +1,13 @@
 """
-Example 02 — one tool call (no loop yet).
-=========================================
+Example 02: one tool call (no loop yet).
 
 Here's the single most important mechanic, in isolation: you give the model some
 tools and a question; instead of answering, it replies "please run calculator
-with expression='23 * 47'." That's a *request* — the model can't run anything
+with expression='23 * 47'." That's a *request*; the model can't run anything
 itself. You run it.
 
 This example does exactly one turn so you can see the shape of that request
-clearly. It does NOT feed the result back yet — that's the loop, and it's the
+clearly. It does NOT feed the result back yet. That's the loop, and it's the
 next example. (We call the provider shim directly here to expose the raw turn;
 normally you'd just use run_agent.)
 
@@ -48,12 +47,12 @@ else:
     print(f"  args: {call.arguments}")
     print(f"  id:   {call.id}")
 
-    # WE run it — the model only asked.
+    # WE run it; the model only asked.
     result = agent.CALCULATOR.func(**call.arguments)
     print(f"\nWe run calculator{tuple(call.arguments.values())} -> {result}")
 
 print(
     "\nThat's one turn: question -> tool *request* -> you execute it. To turn the "
-    "result into a final answer, you append it and ask again — and if you keep "
+    "result into a final answer, you append it and ask again, and if you keep "
     "doing that until the model stops asking, you have an agent. That's example 03."
 )

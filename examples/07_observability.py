@@ -1,9 +1,8 @@
 """
-Example 07 — observability: see what the agent did.
-===================================================
+Example 07: observability: see what the agent did.
 
 An agent makes its own decisions, so when it misbehaves you need to see *why*. The
-cure is a trace: a record of every step — which tool, what arguments, what result.
+cure is a trace: a record of every step, which tool, what arguments, what result.
 You've seen the live Tracer print steps as they happen; this example also shows
 the same information *after the fact*, from `result.steps`, which is what you'd log
 and inspect in a real system.
@@ -46,7 +45,7 @@ result = agent.run_agent(
 print(f"\nFinal answer: {result.answer}")
 
 # Post-hoc: the same steps as structured data you could log, render, or evaluate.
-print("\nStructured trace (result.steps) — what you'd log in production:")
+print("\nStructured trace (result.steps): what you'd log in production:")
 for i, s in enumerate(result.steps, start=1):
     preview = " ".join(s.result.split())[:70]
     print(f"  {i}. {s.tool}({s.arguments})  approved={s.approved}")
@@ -54,5 +53,5 @@ for i, s in enumerate(result.steps, start=1):
 
 print(
     "\nNo trace, no debugging: an agent's value and its failures both live in the "
-    "sequence of tool calls. Capture them — for humans now, and for evals later."
+    "sequence of tool calls. Capture them, for humans now and for evals later."
 )

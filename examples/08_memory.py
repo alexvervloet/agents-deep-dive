@@ -1,12 +1,11 @@
 """
-Example 08 — memory: an agent that remembers the conversation.
-=============================================================
+Example 08: memory: an agent that remembers the conversation.
 
-So far each run started fresh. A useful assistant remembers earlier turns — but
+So far each run started fresh. A useful assistant remembers earlier turns, but
 the API is stateless (the same lesson as the sibling repos): "memory" is just YOU
 re-sending the growing message list each turn. `run_agent` takes an optional
 `history` list and appends to it in place, so passing the same list across calls
-gives the agent memory — including the tool calls and results from earlier turns.
+gives the agent memory, including the tool calls and results from earlier turns.
 
 This is a small REPL. Try a follow-up that only makes sense with memory:
 
@@ -49,7 +48,7 @@ while True:
     if not user_input:
         continue
 
-    # Same `history` list every turn — that's the memory.
+    # Same `history` list every turn. That's the memory.
     result = agent.run_agent(
         SYSTEM, user_input, [agent.CALCULATOR, agent.SEARCH_NOTES], history=history
     )
@@ -57,6 +56,6 @@ while True:
 
 print(
     "The agent 'remembered' only because you passed the same history list back in. "
-    "Drop the list (start fresh each turn) and it forgets — memory is a choice you "
+    "Drop the list (start fresh each turn) and it forgets. Memory is a choice you "
     "make by holding onto the conversation, not a server-side feature."
 )

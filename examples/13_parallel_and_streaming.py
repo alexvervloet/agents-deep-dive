@@ -1,8 +1,7 @@
 """
-Example 13 — parallel tool calls & streaming the answer.
-========================================================
+Example 13: parallel tool calls & streaming the answer.
 
-Two upgrades that make an agent faster and feel faster — both layered on the same
+Two upgrades that make an agent faster and feel faster, both layered on the same
 loop you already know.
 
   PARALLEL TOOLS. In one turn the model often asks for several *independent* tool
@@ -12,7 +11,7 @@ loop you already know.
   not the sum.
 
   STREAMING. The final answer is just a chat completion, so you can stream it token
-  by token (exactly like the API deep dives) — the user reads immediately instead of
+  by token (exactly like the API deep dives), so the user reads immediately instead of
   staring at a spinner while a long answer generates.
 
 This script drives one turn that fans out into several (deliberately slow) tool
@@ -92,7 +91,7 @@ def execute(calls, parallel: bool):
 
 
 def stream_final(system: str, history: list):
-    """Stream the final answer token by token (no tools — just the answer)."""
+    """Stream the final answer token by token (no tools, just the answer)."""
     name = providers.provider_name()
     if name == "openai":
         from openai import OpenAI
@@ -127,7 +126,7 @@ if __name__ == "__main__":
 
     if len(calls) < 2:
         print(
-            "(The model didn't fan out this run — parallel speedup needs ≥2 independent\n"
+            "(The model didn't fan out this run; parallel speedup needs ≥2 independent\n"
             " calls in one turn. Re-run, or try the other provider.)"
         )
 
@@ -149,7 +148,7 @@ if __name__ == "__main__":
     stream_final(SYSTEM, history)
 
     print(
-        "\nTakeaway: independent tool calls in a turn should run concurrently — the turn\n"
+        "\nTakeaway: independent tool calls in a turn should run concurrently, so the turn\n"
         "then costs the slowest call, not the sum. And the final answer is an ordinary\n"
         "completion, so stream it (like the API dives) for instant, responsive output."
     )

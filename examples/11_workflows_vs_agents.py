@@ -1,15 +1,14 @@
 """
-Example 11 — workflows vs. agents: use the simplest thing that works.
-=====================================================================
+Example 11: workflows vs. agents: use the simplest thing that works.
 
 "Agent" is fashionable, but a loop where the model drives is not always what you
 want. There's a spectrum:
 
-  WORKFLOW — YOU orchestrate fixed steps in code (classify -> route -> handle). The
+  WORKFLOW: YOU orchestrate fixed steps in code (classify -> route -> handle). The
              path is known, so you hard-code it. Predictable, cheap, easy to test,
              easy to debug. Most "AI features" are really workflows.
 
-  AGENT    — the MODEL drives an open-ended loop, choosing tools and steps itself
+  AGENT:    the MODEL drives an open-ended loop, choosing tools and steps itself
              (examples 03-10). Flexible and powerful, but less predictable, pricier,
              and harder to test. Reach for it when the path *can't* be known up front.
 
@@ -18,7 +17,7 @@ This example does the SAME customer-support task both ways:
     category-specific prompt. The control flow lives in Python.
   - the AGENT loop: hand the model tools and let it decide.
 
-Both work here — which is exactly the point. The workflow is the right default;
+Both work here, which is exactly the point. The workflow is the right default;
 the agent earns its keep only when the task is genuinely open-ended.
 
 Run it:
@@ -42,7 +41,7 @@ print(f"Provider: {agent.describe()}\n")
 
 
 def llm(system: str, user: str) -> str:
-    """A plain, tool-free LLM call (one turn) — the building block of a workflow."""
+    """A plain, tool-free LLM call (one turn): the building block of a workflow."""
     turn = providers.run_turn(system, [providers.user_message(user)], [])
     return (turn.text or "").strip()
 
@@ -95,7 +94,7 @@ if __name__ == "__main__":
 
     print(
         "\nTakeaway: don't reach for an agent by default. If you can draw the flowchart,\n"
-        "build the WORKFLOW — it's cheaper, more predictable, and easier to test. Use an\n"
+        "build the WORKFLOW; it's cheaper, more predictable, and easier to test. Use an\n"
         "agent when the steps genuinely can't be known in advance. 'Simplest thing that\n"
         "works' applies to architecture, not just prompts."
     )

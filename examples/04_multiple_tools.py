@@ -1,11 +1,10 @@
 """
-Example 04 — multiple tools: the model chooses.
-===============================================
+Example 04: multiple tools: the model chooses.
 
 Give the agent more than one tool and a new skill appears: it picks the *right*
 tool for each step, and chains them. Here it has `search_notes` (product facts)
 and `calculator` (math). A question like "what does the Plus plan cost per year?"
-needs both — look up the monthly price, then multiply by 12 — and the model
+needs both (look up the monthly price, then multiply by 12) and the model
 sequences them on its own.
 
 The tool *descriptions* are what let it choose well, which is why they're written
@@ -52,7 +51,7 @@ tools_used = ", ".join(sorted({s.tool for s in result.steps})) or "none"
 print(f"(tools used: {tools_used})")
 
 print(
-    "\nThe agent routed each sub-task to the right tool with no hard-coded plan — "
+    "\nThe agent routed each sub-task to the right tool with no hard-coded plan. "
     "that routing is the model's job, and good tool descriptions are how you make "
     "it reliable."
 )

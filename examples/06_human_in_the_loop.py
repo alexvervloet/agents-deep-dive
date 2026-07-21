@@ -1,15 +1,14 @@
 """
-Example 06 — human-in-the-loop approval.
-========================================
+Example 06: human-in-the-loop approval.
 
-Some tools have consequences — sending email, deleting data, spending money,
+Some tools have consequences: sending email, deleting data, spending money,
 writing files. You don't want the model to trigger those unsupervised. The fix:
 mark a tool `dangerous=True` and pass run_agent an `approve` callback. Before
 running a dangerous tool, the loop asks your callback for permission; a denial
 comes back to the model as an ordinary result, and it adapts.
 
 Here, `save_note` writes a file, so it's dangerous. `calculator` and
-`search_notes` aren't, so they run freely — you're only prompted for the action
+`search_notes` aren't, so they run freely. You're only prompted for the action
 that actually matters.
 
 This example is interactive: it asks YOU to approve at the terminal.
@@ -61,7 +60,7 @@ print(f"\nFinal answer: {result.answer}")
 denied = any(not s.approved for s in result.steps)
 if denied:
     print(
-        "(you denied a tool call — notice the agent acknowledged it instead of forcing it)"
+        "(you denied a tool call; notice the agent acknowledged it instead of forcing it)"
     )
 
 print(

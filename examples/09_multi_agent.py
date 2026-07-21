@@ -1,9 +1,8 @@
 """
-Example 09 — multi-agent: an agent that delegates to another agent.
-==================================================================
+Example 09: multi-agent: an agent that delegates to another agent.
 
 As tasks grow, one agent with twenty tools gets unfocused. The fix is the same one
-humans use: delegate. A "sub-agent" is not a new mechanism — it's just a tool
+humans use: delegate. A "sub-agent" is not a new mechanism. It's just a tool
 whose function happens to run its own agent loop, with its own system prompt and
 its own (smaller) toolset.
 
@@ -84,7 +83,7 @@ result = agent.run_agent(
 print(f"\nFinal answer: {result.answer}")
 
 print(
-    "\nNotice 'research' is just a tool to the orchestrator — but it's an agent "
+    "\nNotice 'research' is just a tool to the orchestrator, but it's an agent "
     "underneath. That's how big agent systems are built: not one giant agent, but "
     "focused agents that call each other through the same tool interface."
 )

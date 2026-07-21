@@ -1,15 +1,14 @@
 """
-Example 05 — control: step limits and error recovery.
-=====================================================
+Example 05: control: step limits and error recovery.
 
 An unsupervised loop around a model needs guardrails. Two essential ones, both
 built into run_agent:
 
-  1. A STEP LIMIT (max_steps). A confused agent can loop forever — calling tools,
+  1. A STEP LIMIT (max_steps). A confused agent can loop forever, calling tools,
      never deciding it's done. A hard ceiling turns "runs up a huge bill" into
      "stops and tells you it didn't finish."
 
-  2. ERROR RECOVERY. When a tool raises, we don't crash — we hand the error text
+  2. ERROR RECOVERY. When a tool raises, we don't crash. We hand the error text
      back to the model *as the tool result*. The model reads it and adapts (tries
      different inputs, or explains the problem) instead of the whole program dying.
 
@@ -44,7 +43,7 @@ r1 = agent.run_agent(
 print(f"Final answer: {r1.answer}")
 errored = any(s.result.startswith("Error") for s in r1.steps)
 print(
-    f"(a tool returned an error mid-run: {errored} — the agent handled it, didn't crash)"
+    f"(a tool returned an error mid-run: {errored}; the agent handled it, didn't crash)"
 )
 
 # 2. Step limit: a task that needs several calls, capped at 1 step.
@@ -58,10 +57,10 @@ r2 = agent.run_agent(
 )
 print(f"Final answer: {r2.answer}")
 print(
-    f"(stopped early: {r2.stopped_early} — the ceiling protected you from an unbounded loop)"
+    f"(stopped early: {r2.stopped_early}; the ceiling protected you from an unbounded loop)"
 )
 
 print(
-    "\nThese two knobs — a hard step cap and feeding errors back as results — are "
+    "\nThese two knobs, a hard step cap and feeding errors back as results, are "
     "the difference between a toy loop and one you'd let run unattended."
 )

@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """
-10_mcp.py — use a tool you didn't ship with, over a protocol (offline, no key).
-===============================================================================
+10_mcp.py: use a tool you didn't ship with, over a protocol (offline, no key).
 
     python examples/10_mcp.py
 
 Every earlier example imported its tools straight from `agent/tools.py`. Real
 agents often can't: the tool lives in another team's service, a vendor's product,
 or a process in another language. MCP (Model Context Protocol) is the standard
-that makes that work — the tool *server* advertises what it offers, and the agent
+that makes that work: the tool *server* advertises what it offers, and the agent
 *client* discovers and calls those tools over one agreed wire format, with no
 bespoke glue per tool.
 
 This script is the client. It launches `agent/mcp_server.py` as a subprocess and
 speaks MCP to it: `tools/list` to discover what's there, then `tools/call` to run
-one. The payoff is the conversion step — each remote tool descriptor becomes an
+one. The payoff is the conversion step: each remote tool descriptor becomes an
 ordinary `Tool` object (the same dataclass from `agent/tools.py`), so an
 MCP-served tool drops into the loop from example 03 unchanged. To the agent loop,
 "a local function" and "a tool on a server across the world" look identical.
@@ -40,8 +39,8 @@ class MCPClient:
     """A minimal MCP client: spawn a tool server and call it over stdio.
 
     A production client would use the official `mcp` SDK and support more
-    transports (HTTP/SSE), auth, and streaming. The protocol *shape* — list tools,
-    call a tool by name with JSON arguments, read content blocks back — is exactly
+    transports (HTTP/SSE), auth, and streaming. The protocol *shape* (list tools,
+    call a tool by name with JSON arguments, read content blocks back) is exactly
     this.
     """
 
@@ -79,7 +78,7 @@ class MCPClient:
 
     def as_tools(self) -> list[Tool]:
         """Turn every remote tool into a local `Tool` object. Its `func` is a
-        closure that makes a `tools/call` over the protocol — so the rest of the
+        closure that makes a `tools/call` over the protocol, so the rest of the
         repo (the loop, the tracer, approval gates) treats it like any other tool."""
         tools = []
         for desc in self.list_tools():
@@ -106,7 +105,7 @@ def main() -> None:
         print("Connecting to the MCP tool server and asking what it offers...\n")
         tools = client.as_tools()
         for tool in tools:
-            print(f"  • {tool.name} — {tool.description}")
+            print(f"  • {tool.name}: {tool.description}")
 
         print("\nCalling tools over the protocol (the agent never imported them):\n")
         print(
@@ -121,7 +120,7 @@ def main() -> None:
 
         print("\nThese came back as ordinary Tool objects:")
         print(f"  {[t.name for t in tools]}")
-        print("…so they drop straight into `run_agent(...)` from example 03 — the loop")
+        print("...so they drop straight into `run_agent(...)` from example 03. The loop")
         print("can't tell a local function from a tool served across a protocol.")
     finally:
         client.close()

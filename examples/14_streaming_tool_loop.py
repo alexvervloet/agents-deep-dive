@@ -1,17 +1,16 @@
 """
-Example 14 — streaming WITHIN the tool loop.
-============================================
+Example 14: streaming WITHIN the tool loop.
 
-Example 13 streamed the *final* answer — after every tool had run. But the answer
+Example 13 streamed the *final* answer, after every tool had run. But the answer
 isn't the only thing worth streaming. In a real assistant the model often narrates
-as it works ("Let me look up the price… now I'll compute the total…"), and that
+as it works ("Let me look up the price... now I'll compute the total..."), and that
 text appears on the *same* turns that request tools. Streaming only the final answer
 makes the user stare at a spinner through every tool step; streaming inside the loop
-makes the whole thing feel alive — the pattern most production assistants use.
+makes the whole thing feel alive, the pattern most production assistants use.
 
 The change is small: swap the loop's non-streaming `run_turn` for `stream_turn`,
 which prints the assistant's text token by token via a callback AND still returns
-the normalized tool calls. Everything else — run the tools, feed results back, loop —
+the normalized tool calls. Everything else (run the tools, feed results back, loop)
 is the agent loop you already know from example 03.
 
 This drives a two-step task (look up a price, then do arithmetic on it) and streams
@@ -43,7 +42,7 @@ SYSTEM = (
     "facts and the calculator for arithmetic. Briefly narrate what you're doing "
     "before each tool call, then give a final answer."
 )
-QUESTION = "The Plus plan — what does a full year cost, and what's 15% tax on that yearly price?"
+QUESTION = "The Plus plan: what does a full year cost, and what's 15% tax on that yearly price?"
 
 
 def streaming_agent(system: str, question: str, tools: list, max_steps: int = 6) -> str:
@@ -88,7 +87,7 @@ if __name__ == "__main__":
     print(f"\nFinal answer: {answer}")
     print(
         "\nTakeaway: streaming isn't just for the final answer. Swap `run_turn` for\n"
-        "`stream_turn` and the agent narrates live through every tool step — the same\n"
+        "`stream_turn` and the agent narrates live through every tool step, the same\n"
         "loop, but it now feels responsive instead of frozen between calls. (Accumulating\n"
         "streamed tool-call fragments is the one fiddly bit; it lives in agent/providers.py.)"
     )

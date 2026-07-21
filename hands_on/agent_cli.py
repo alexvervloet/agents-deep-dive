@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-agent_cli.py — the capstone: a real CLI agent.
-==============================================
+agent_cli.py: the capstone: a real CLI agent.
 
 Everything in the repo, assembled into one tool you can actually use. It has the
 full toolbox (calculator, knowledge-base search, save-note), runs the agentic
@@ -93,11 +92,11 @@ def main(argv) -> int:
         console.print()
         console.print(Markdown(result.answer))
         if result.stopped_early:
-            console.print("[red](stopped early — hit the step limit)[/red]")
+            console.print("[red](stopped early: hit the step limit)[/red]")
         return 0
 
     # Interactive mode with memory.
-    console.print("Interactive agent — it remembers the conversation. Type 'quit' to exit.\n")
+    console.print("Interactive agent. It remembers the conversation. Type 'quit' to exit.\n")
     history: list = []
     while True:
         try:

@@ -8,8 +8,8 @@ rich>=13.0.0
 # You only strictly need the one matching your PROVIDER (see .env). Both are
 # light, and installing both lets you switch stacks with one env-var change.
 
-# OpenAI — used when PROVIDER=openai (chat + function calling).
+# OpenAI: used when PROVIDER=openai (chat + function calling).
 openai>=1.30.0
 
-# Anthropic — used when PROVIDER=claude (messages + tool use).
+# Anthropic: used when PROVIDER=claude (messages + tool use).
 anthropic>=0.111.0

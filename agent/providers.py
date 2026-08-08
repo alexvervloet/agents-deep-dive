@@ -26,7 +26,7 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 
-_OPENAI_CHAT = "gpt-4o-mini"
+_OPENAI_CHAT = "gpt-5.4-nano"
 _CLAUDE_CHAT = "claude-haiku-4-5"
 _KEYS = {"openai": ["OPENAI_API_KEY"], "claude": ["ANTHROPIC_API_KEY"]}
 

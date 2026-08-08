@@ -38,7 +38,7 @@ agent.ensure_ready()
 print(f"Provider: {agent.describe()}\n")
 
 MODELS = {
-    "openai": "gpt-4o-mini",
+    "openai": "gpt-5.4-nano",
     "claude": "claude-haiku-4-5",
 }  # mirrors agent/providers.py
 

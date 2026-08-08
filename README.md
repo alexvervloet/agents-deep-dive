@@ -59,7 +59,7 @@ in the sibling repos with `PROVIDER` in `.env`:
 
 | `PROVIDER` | Chat model | Key needed |
 |------------|-----------|------------|
-| `openai` (default) | OpenAI `gpt-4o-mini` | `OPENAI_API_KEY` |
+| `openai` (default) | OpenAI `gpt-5.4-nano` | `OPENAI_API_KEY` |
 | `claude` | Claude `claude-haiku-4-5` | `ANTHROPIC_API_KEY` |
 
 Tool-calling has a genuinely different *shape* per provider (OpenAI's

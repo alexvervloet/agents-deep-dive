@@ -342,6 +342,56 @@ equivalent. The protocol shape you just built by hand is exactly what those use.
 
 ---
 
+## Bonus: the tool surface at scale (tool search & PTC)
+
+```bash
+secrun python examples/16_tool_search_and_ptc.py
+```
+
+Everything above assumed a handful of tools and a handful of calls. Both break
+in the same place: the context window. Thirty tools means thousands of tokens of
+schema on every request, most of it irrelevant. Forty tool calls means forty
+results in context when you wanted one number.
+
+**Tool search** fixes the first. Mark tools `defer_loading: True`, add a search
+tool, and the model loads only the schemas it needs. The loaded schemas are
+*appended* rather than swapped, so the cached prefix survives. Never defer
+everything: the search tool must stay loaded and at least one tool must be
+non-deferred, or you get a 400.
+
+**Programmatic tool calling** fixes the second. Give a tool
+`allowed_callers: ["code_execution_20260120"]` and Claude can call it from inside
+a script running in the code-execution container. Results return to the running
+program, not to the context window, so cost scales with the size of the answer
+instead of the number of calls. Standard tool use is "model asks, you answer,
+model reads"; PTC is "model writes a program, the program asks, the program
+reads". PTC needs Sonnet 4.5 / Opus 4.5 or newer; tool search runs on Haiku 4.5.
+
+---
+
+## Bonus: memory that outlives the process
+
+```bash
+secrun python examples/17_memory_tool.py    # run it twice
+```
+
+Section 9's memory is the message list, which is the right default and dies with
+the process. The **memory tool** is the other kind: Claude gets a `/memories`
+directory it reads and writes through tool calls, and because it is a
+*client-side* tool, you implement the storage and decide how long it lives.
+
+Declaring the tool does not give you storage; it tells Claude the commands
+exist. That is what lets you scope memory per user and delete it on request.
+
+Two rules the example enforces rather than merely mentions. **Validate every
+path**: they are model-generated, the agent reads untrusted content (see the
+[Prompt Injection dive](https://github.com/alexvervloet/prompt-injection-deep-dive)),
+and a six-line guard is the difference between a memory directory and an
+arbitrary file write. **Never store secrets**: memory is replayed verbatim into
+future contexts, so a key written once leaks into every later session.
+
+---
+
 ## Where to go next
 
 You've built a real agent from scratch. The frontier is more of the same loop, with
@@ -427,6 +477,8 @@ examples/
   13_parallel_and_streaming.py ← run independent tool calls concurrently; stream the answer
   14_streaming_tool_loop.py    ← stream every turn (incl. tool turns), not just the final answer
   15_hosted_tools.py        ← a provider-hosted tool (web search): the provider runs it inside the turn
+  16_tool_search_and_ptc.py ← many tools, many calls: keeping both out of context
+  17_memory_tool.py        ← memory that survives the process (client-side storage)
 ```
 
 (`workspace/` is created by the `save_note` tool and is git-ignored.)

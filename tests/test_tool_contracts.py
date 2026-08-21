@@ -240,6 +240,33 @@ class ToolContractTests(unittest.TestCase):
         self.assertEqual(len(effects), 3)
         self.assertEqual(approvals, ["call-1", "call-2", "call-1"])
 
+    def test_reused_call_id_with_new_arguments_is_denied_not_replayed(self) -> None:
+        effects: list[dict] = []
+        executor = agent.ToolExecutor([_refund_tool(effects)])
+        context = _billing_context()
+        approve = lambda _call: True
+
+        first = executor.execute(_valid_call("call-1"), context, approve=approve)
+        reused = executor.execute(
+            _valid_call("call-1", order_id="ORD-9999", amount_cents=4_900),
+            context,
+            approve=approve,
+        )
+        honest_retry = executor.execute(_valid_call("call-1"), context, approve=approve)
+
+        self.assertTrue(first.ok)
+        self.assertEqual(reused.code, "idempotency_key_reuse")
+        self.assertFalse(reused.replayed)
+        self.assertTrue(honest_retry.replayed)
+        self.assertEqual(len(effects), 1)
+        # The denial must be visible as its own proposal, not hidden behind the
+        # settled one, so the audit trail can show what was actually attempted.
+        self.assertNotEqual(reused.arguments_sha256, first.arguments_sha256)
+        self.assertEqual(
+            [record.code for record in executor.audit_records],
+            ["ok", "idempotency_key_reuse", "ok"],
+        )
+
     def test_replay_storage_is_bounded_and_eviction_is_explicit(self) -> None:
         effects: list[dict] = []
         executor = agent.ToolExecutor(

@@ -53,5 +53,6 @@ jobs:
           PROVIDER: openai
         run: |
           python examples/01_tools.py
+          python examples/07_observability.py
           python examples/10_mcp.py
           python examples/18_tool_contracts.py

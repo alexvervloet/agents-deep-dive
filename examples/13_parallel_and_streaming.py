@@ -57,6 +57,7 @@ WEATHER = agent.Tool(
         "type": "object",
         "properties": {"city": {"type": "string"}},
         "required": ["city"],
+        "additionalProperties": False,
     },
     func=slow_weather,
 )

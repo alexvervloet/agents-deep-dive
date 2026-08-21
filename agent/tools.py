@@ -26,7 +26,7 @@ import operator
 import os
 import re
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE = os.path.join(REPO_ROOT, "workspace")
@@ -34,15 +34,34 @@ WORKSPACE = os.path.join(REPO_ROOT, "workspace")
 
 @dataclass
 class Tool:
-    """What the model sees (name/description/parameters) plus what actually runs
-    (func). `parameters` is a JSON Schema; `dangerous` flags side effects that
-    should require approval before execution."""
+    """Declare a callable's model-facing schema and application-owned policy.
+
+    ``parameters`` describes only values the model may propose. Identity and
+    tenancy belong in ``trusted_context_args``, whose keys are callable argument
+    names and whose values name fields on ``ExecutionContext``. An empty role
+    set permits every authenticated context; otherwise at least one role must
+    match. ``dangerous`` requires explicit approval, while ``mutating`` enables
+    replay protection. Time and output limits are enforced by ``ToolExecutor``.
+    """
 
     name: str
     description: str
     parameters: dict
     func: Callable
     dangerous: bool = False
+    allowed_roles: frozenset[str] = frozenset()
+    trusted_context_args: dict[str, str] = field(default_factory=dict)
+    mutating: bool = False
+    timeout_seconds: float = 5.0
+    maximum_output_bytes: int = 16_384
+
+    def __post_init__(self) -> None:
+        """Reject policy values that cannot produce a meaningful contract."""
+
+        if self.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
+        if self.maximum_output_bytes <= 0:
+            raise ValueError("maximum_output_bytes must be positive")
 
 
 # --- calculator: a safe arithmetic evaluator (NOT Python's eval()) ---------
@@ -122,8 +141,16 @@ CALCULATOR = Tool(
     description="Evaluate an arithmetic expression like '12 * (3 + 4)'. Use this for any math instead of computing it yourself.",
     parameters={
         "type": "object",
-        "properties": {"expression": {"type": "string", "description": "e.g. '2 + 2 * 10'"}},
+        "properties": {
+            "expression": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "e.g. '2 + 2 * 10'",
+            }
+        },
         "required": ["expression"],
+        "additionalProperties": False,
     },
     func=calculator,
 )
@@ -133,8 +160,16 @@ SEARCH_NOTES = Tool(
     description="Search the Nimbus Notes help knowledge base. Use this to answer questions about the product (plans, billing, security, etc.).",
     parameters={
         "type": "object",
-        "properties": {"query": {"type": "string", "description": "What to look up"}},
+        "properties": {
+            "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "description": "What to look up",
+            }
+        },
         "required": ["query"],
+        "additionalProperties": False,
     },
     func=search_notes,
 )
@@ -145,13 +180,15 @@ SAVE_NOTE = Tool(
     parameters={
         "type": "object",
         "properties": {
-            "title": {"type": "string"},
-            "body": {"type": "string"},
+            "title": {"type": "string", "minLength": 1, "maxLength": 120},
+            "body": {"type": "string", "maxLength": 10_000},
         },
         "required": ["title", "body"],
+        "additionalProperties": False,
     },
     func=save_note,
     dangerous=True,
+    mutating=True,
 )
 
 

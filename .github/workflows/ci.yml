@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-course:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Compile every Python path
+        run: python -m compileall -q agent examples hands_on tests check_setup.py
+
+      - name: Run a nonempty test suite
+        run: |
+          python - <<'PY'
+          import unittest
+
+          suite = unittest.defaultTestLoader.discover("tests")
+          count = suite.countTestCases()
+          print(f"discovered tests: {count}")
+          if count == 0:
+              raise SystemExit("test discovery found zero tests")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if not result.wasSuccessful():
+              raise SystemExit(1)
+          PY
+
+      - name: Prove checks survive optimized mode
+        run: python -O -m unittest discover -s tests -v
+
+      - name: Run every offline lesson
+        shell: bash
+        env:
+          PROVIDER: openai
+        run: |
+          python examples/01_tools.py
+          python examples/10_mcp.py
+          python examples/18_tool_contracts.py

@@ -249,7 +249,7 @@ extensibility story.
 
 ---
 
-## Going further: three more agent patterns
+## Going further: four more agent patterns
 
 **Recall (`11`).** You can solve a support task with a hard-coded workflow or with
 the agent loop. When should you *not* reach for an agent?

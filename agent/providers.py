@@ -100,14 +100,46 @@ def user_message(text: str) -> dict:
     return {"role": "user", "content": text}
 
 
+def _openai_strict_compatible(schema: object) -> bool:
+    """Check the object-shape rules OpenAI requires before advertising strictness.
+
+    Local validation remains mandatory either way. Remote MCP schemas may contain
+    optional fields, so claiming strict mode for every discovered schema would
+    make an otherwise valid provider request fail before the agent can run.
+    """
+
+    if isinstance(schema, list):
+        return all(_openai_strict_compatible(item) for item in schema)
+    if not isinstance(schema, dict):
+        return True
+    if schema.get("type") == "object":
+        properties = schema.get("properties", {})
+        if not isinstance(properties, dict):
+            return False
+        if schema.get("additionalProperties") is not False:
+            return False
+        if set(schema.get("required", [])) != set(properties):
+            return False
+    return all(_openai_strict_compatible(value) for value in schema.values())
+
+
 def to_tool_schema(tools: list) -> list:
-    """Convert neutral Tool objects to the active provider's tool format."""
+    """Convert tools to provider format, adding strictness only when supportable.
+
+    OpenAI strict mode is generation-time defense in depth. ``ToolExecutor`` still
+    validates locally because provider output is untrusted at the execution seam.
+    """
     p = provider_name()
     if p == "openai":
         return [
             {
                 "type": "function",
-                "function": {"name": t.name, "description": t.description, "parameters": t.parameters},
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": t.parameters,
+                    "strict": _openai_strict_compatible(t.parameters),
+                },
             }
             for t in tools
         ]

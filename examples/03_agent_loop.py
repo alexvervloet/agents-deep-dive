@@ -3,7 +3,9 @@ Example 03: the agent loop. This is the whole idea.
 
 Example 02 did one turn by hand. An agent just repeats it: run the tool, feed the
 result back, ask again, until the model stops asking and gives a final answer.
-That loop is `run_agent` (see agent/loop.py, ~20 lines).
+That loop is `run_agent` (see agent/loop.py). Its control flow is small enough
+to hold in your head; the checks that make a tool call safe to run live behind
+one call to the contract executor from section 7A, deliberately kept out of it.
 
 We give it a question that needs several steps of arithmetic, turn on the Tracer
 so you can watch each tool call, and print the final answer. Notice the model

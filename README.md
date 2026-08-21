@@ -18,7 +18,7 @@ pattern under "AI agents," and once you've written it by hand, the frameworks st
 being magic.
 
 Like its siblings, it's meant to be *walked through*. Each section ends with
-something to run; examples 01, 10, and 18 run **offline and free**.
+something to run; examples 01, 07, 10, and 18 run **offline and free**.
 [EXERCISES.md](EXERCISES.md) has a predict-then-run prompt for each section.
 
 ---
@@ -69,9 +69,10 @@ that knows the difference is [agent/providers.py](agent/providers.py); the loop 
 everything above it stay identical. That's the whole point: agents are an
 architecture, not a provider feature.
 
-> **Start before spending anything.** Examples 01, 10, and 18 are completely
-> offline. They cover tool shape, protocol transport, and the execution contract
-> with no key and no cost; provider-backed examples make small, cheap calls.
+> **Start before spending anything.** Examples 01, 07, 10, and 18 are completely
+> offline. They cover tool shape, trace and replay evidence, protocol transport,
+> and the execution contract with no key and no cost; provider-backed examples
+> make small, cheap calls.
 
 ---
 
@@ -234,13 +235,17 @@ An agent makes its own decisions, so when it misbehaves you need the trace: whic
 tool, what arguments, what result, at each step.
 
 ```bash
-secrun python examples/07_observability.py
+python examples/07_observability.py          # offline
 ```
 
-You've seen the live `Tracer`; this also shows the same steps after the fact from
-`result.steps`, the structured record you'd log in production and feed to an eval
-(see the [evals repo](https://github.com/alexvervloet/evals-deep-dive)) to score whether the agent called the
-right tools in a sensible order.
+The model proposals are scripted so the evidence is stable, while the real loop
+and executor process both attempts. You see a live `Tracer`, then the same steps
+after the fact from `result.steps`: status, explicit approval state, replay state,
+and both provenance digests. The retry reuses the trusted request context, call ID,
+and payload, so the trace visibly reports `replayed=True` while the effect count
+stays at one. These are the records you'd log in production and feed to an eval
+(see the [evals repo](https://github.com/alexvervloet/evals-deep-dive)) to score
+whether the agent called the right tools in a sensible order.
 
 ---
 
@@ -544,7 +549,7 @@ examples/
   04_multiple_tools.py      ← the model routes between tools
   05_limits_and_errors.py   ← max_steps + feeding errors back
   06_human_in_the_loop.py   ← approval gate for dangerous tools
-  07_observability.py       ← tracing each step, live and after the fact
+  07_observability.py       ← offline trace of dispatch and replay evidence
   08_memory.py              ← multi-turn memory via a shared history
   09_multi_agent.py         ← an orchestrator delegating to a sub-agent
   10_mcp.py                 ← use a tool over MCP: offline client + server, no key

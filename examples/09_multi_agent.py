@@ -58,6 +58,7 @@ RESEARCH_TOOL = agent.Tool(
             }
         },
         "required": ["question"],
+        "additionalProperties": False,
     },
     func=research,
 )

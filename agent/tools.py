@@ -14,11 +14,18 @@ We ship three tools, chosen to exercise the important ideas:
   - search_notes read-only lookup over a tiny built-in knowledge base (the same
                    "Nimbus Notes" facts from the RAG repo). A real agent would
                    call your RAG pipeline here.
-  - save_note    WRITES a file. Marked `dangerous=True`, so the loop can require
-                   human approval before it runs (see example 06).
+  - save_note    WRITES a file. Marked `dangerous=True`, so it fails closed unless
+                   an approval callback allows it (see example 06), and
+                   `mutating=True`, so a repeated call ID can't write it twice.
 
 These are deliberately offline and side-effect-free (except save_note, which only
 writes inside ./workspace/), so the repo is safe and reproducible.
+
+The flags on a `Tool` are declarations, not enforcement. `agent/contracts.py`
+is what reads them, and nothing here runs until a call has cleared it: the schema
+below describes what the model may ask for, and the executor decides what actually
+happens. Writing the policy next to the function keeps it auditable; keeping the
+enforcement in one place keeps it from being reimplemented per tool.
 """
 
 import ast

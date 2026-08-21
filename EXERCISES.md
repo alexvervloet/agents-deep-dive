@@ -8,7 +8,7 @@ How to use it: work the section first, then come back. **Commit to an answer
 before you run or reveal.** The prediction is where the learning happens. Answers
 are hidden behind ▸ toggles.
 
-> Examples 01 and 10 are **(offline)**: no API call, no cost. The rest make
+> Examples 01, 10, and 18 are **(offline)**: no API call, no cost. The rest make
 > small, cheap calls.
 
 ---
@@ -126,8 +126,68 @@ you deny one?
 <details><summary>▸ Answer</summary>
 
 You mark it `dangerous=True`; the loop then calls your `approve` callback before
-running it. A denial is returned to the model as a normal tool result ("permission
-denied"), so the agent acknowledges it and adapts instead of forcing the action.
+running it. With no callback it fails closed; an explicit denial is returned to
+the model as a normal tool result ("permission denied"), so the agent
+acknowledges it and adapts instead of forcing the action.
+</details>
+
+---
+
+## Section 7A: Tool contracts **(offline)**
+
+**Predict, then run.** Before running `examples/18_tool_contracts.py`, write down
+which of these proposals should cause a refund: valid billing request,
+model-supplied tenant, amount above the schema maximum, support-role request, and
+a replay of the valid request. Then run it.
+
+<details><summary>▸ Answer</summary>
+
+Only the first proposal crosses the effect boundary. The tenant attempt is
+rejected as trusted-context forgery before ordinary schema validation; the
+oversized amount fails schema validation; the support principal fails
+authorization; and the replay returns the first completed result. The final
+effect count is one.
+</details>
+
+**Recall.** Why do OpenAI strict mode and local JSON Schema validation both
+exist? Which one authorizes the caller?
+
+<details><summary>▸ Answer</summary>
+
+Strict mode constrains what the provider generates and reduces malformed calls.
+Local validation treats the resulting request as untrusted at the execution seam
+and works regardless of provider or transport. Neither authorizes the caller;
+authorization uses roles and identity from authenticated `ExecutionContext`, not
+the model's arguments.
+</details>
+
+**Counterfactual.** In `tests/test_tool_contracts.py`, change one thing at a time:
+raise `amount_cents` from 5,000 to 5,001; change the context role from `billing`
+to `support`; add `tenant_id` to the proposal; replay with a different request
+ID. Predict which decision code changes and whether the callable count changes
+before running the test.
+
+<details><summary>▸ Answer</summary>
+
+The amount becomes `schema_validation`, the role becomes `not_authorized`, and
+the tenant becomes `trusted_context_forgery`; none invokes the callable. A new
+request ID changes the replay scope, so an otherwise allowed call executes a new
+effect. These independent perturbations prove the decision did not derive its
+expected result from the proposal itself.
+</details>
+
+**Design.** The teaching executor records a timeout and replays it for a repeated
+mutating call. Why not automatically retry, and what must replace this cache in a
+multi-worker production service?
+
+<details><summary>▸ Answer</summary>
+
+A timeout says the caller stopped waiting, not that the effect failed; the tool
+may have committed just before the connection disappeared. An automatic retry
+could duplicate it. Production needs a durable idempotency key enforced
+transactionally by the sink (plus coordination across workers), because an
+in-process bounded cache disappears on restart and does not stop concurrent
+workers from racing.
 </details>
 
 ---

@@ -65,7 +65,15 @@ class ExecutionContext:
 
 @dataclass(frozen=True)
 class ToolOutcome:
-    """A stable result category plus provenance safe to feed to logs and tests."""
+    """A stable result category plus provenance safe to feed to logs and tests.
+
+    ``code`` is the field to read when you want to know what happened; it is the
+    only one that distinguishes the reasons. ``approved`` answers the narrower
+    question "did this call clear the approval gate", and it is False for every
+    denial reached before that gate, including a schema error on a tool nobody
+    would have been asked about. Read the two together or you will misread a
+    malformed call as a human saying no.
+    """
 
     ok: bool
     code: str

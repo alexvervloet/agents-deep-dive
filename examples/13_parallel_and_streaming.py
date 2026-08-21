@@ -61,6 +61,8 @@ WEATHER = agent.Tool(
     },
     func=slow_weather,
 )
+WEATHER_EXECUTOR = agent.ToolExecutor([WEATHER])
+WEATHER_CONTEXT = agent.ExecutionContext.local("parallel-weather-example")
 
 SYSTEM = (
     "You are a travel assistant. The user names several cities; call get_weather "
@@ -83,7 +85,8 @@ def execute(calls, parallel: bool):
     """Run the requested tool calls, sequentially or concurrently; return results."""
 
     def run(call):
-        return (call.id, slow_weather(**call.arguments))
+        outcome = WEATHER_EXECUTOR.execute(call, WEATHER_CONTEXT)
+        return (call.id, outcome.for_model())
 
     if parallel:
         with ThreadPoolExecutor(max_workers=len(calls) or 1) as pool:

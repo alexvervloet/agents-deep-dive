@@ -50,7 +50,7 @@ SYSTEM = (
 def make_approver(auto_yes: bool, console: Console):
     def approve(call: agent.ToolCall) -> bool:  # type: ignore[attr-defined]
         if auto_yes:
-            console.print(f"[yellow][auto-approved][/yellow] {call.name}({call.arguments})")
+            console.print(f"[yellow]\\[auto-approved][/yellow] {call.name}({call.arguments})")
             return True
         console.print(f"\n[yellow]Approval needed[/yellow]: {call.name}({call.arguments})")
         return input("  Allow this? [y/N] ").strip().lower() in ("y", "yes")

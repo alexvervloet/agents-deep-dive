@@ -105,8 +105,10 @@ def run_agent(
     - `context`: trusted request identity, tenant, and roles. The local teaching
       context is used when omitted; server applications should always pass their
       authenticated context.
-    - `executor`: optional reusable ToolExecutor. Reuse it across retries of the
-      same request so its bounded in-process replay cache can recognize them.
+    - `executor`: optional reusable ToolExecutor. Its replay cache is keyed partly
+      on `context.request_id`, so reusing an executor only recognizes a retry if
+      you pass the SAME `context` too. Reuse one without the other and every call
+      looks new, silently: a fresh `ExecutionContext.local()` mints a fresh ID.
     """
     tool_schema = providers.to_tool_schema(tools)
     context = context or ExecutionContext.local()

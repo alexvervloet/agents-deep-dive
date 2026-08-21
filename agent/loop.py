@@ -106,11 +106,13 @@ def run_agent(
       context is used when omitted; server applications should always pass their
       authenticated context.
     - `executor`: optional reusable ToolExecutor. Its replay cache is keyed partly
-      on `context.request_id`, so reusing an executor only recognizes a retry if
-      you pass the SAME `context` too. Reuse one without the other and every call
-      looks new, silently: a fresh `ExecutionContext.local()` mints a fresh ID.
+      on `context.request_id`, so passing an executor requires the SAME explicit
+      `context` across retries. Omitting it is rejected before any provider call;
+      silently minting a new request ID would disable replay protection.
     """
     tool_schema = providers.to_tool_schema(tools)
+    if executor is not None and context is None:
+        raise ValueError("context is required when reusing an executor")
     context = context or ExecutionContext.local()
     executor = executor or ToolExecutor(tools)
     if history is None:

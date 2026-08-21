@@ -451,6 +451,72 @@ class ToolContractTests(unittest.TestCase):
         self.assertEqual(result.steps[0].status, "schema_validation")
         self.assertIn("schema_validation", result.steps[0].result)
 
+    def test_reusable_executor_without_context_fails_before_provider_call(self) -> None:
+        executor = agent.ToolExecutor([agent.CALCULATOR])
+        with patch.object(providers, "run_turn") as run_turn:
+            with self.assertRaisesRegex(ValueError, "context is required"):
+                agent.run_agent(
+                    "system",
+                    "calculate two plus two",
+                    [agent.CALCULATOR],
+                    executor=executor,
+                )
+        run_turn.assert_not_called()
+
+    def test_context_without_executor_remains_a_valid_one_shot(self) -> None:
+        final = providers.Turn(
+            "No tool needed.",
+            [],
+            {"role": "assistant", "content": "No tool needed."},
+        )
+        with patch.object(providers, "run_turn", return_value=final):
+            result = agent.run_agent(
+                "system",
+                "hello",
+                [agent.CALCULATOR],
+                context=_billing_context(),
+            )
+        self.assertEqual(result.answer, "No tool needed.")
+
+    def test_executor_and_context_together_replay_across_loop_invocations(self) -> None:
+        effects: list[str] = []
+        tool = agent.Tool(
+            "write",
+            "Record one item.",
+            {
+                "type": "object",
+                "properties": {"item": {"type": "string"}},
+                "required": ["item"],
+                "additionalProperties": False,
+            },
+            lambda item: effects.append(item) or "written",
+            mutating=True,
+        )
+        executor = agent.ToolExecutor([tool])
+        context = _billing_context()
+        requested = providers.Turn(
+            None,
+            [providers.ToolCall("write-1", "write", {"item": "invoice"})],
+            {"role": "assistant", "content": None},
+        )
+        final = providers.Turn(
+            "Done.",
+            [],
+            {"role": "assistant", "content": "Done."},
+        )
+        turns = iter([requested, final, requested, final])
+        with patch.object(providers, "run_turn", side_effect=lambda *_args: next(turns)):
+            first = agent.run_agent(
+                "system", "write", [tool], context=context, executor=executor
+            )
+            second = agent.run_agent(
+                "system", "write again", [tool], context=context, executor=executor
+            )
+
+        self.assertFalse(first.steps[0].replayed)
+        self.assertTrue(second.steps[0].replayed)
+        self.assertEqual(effects, ["invoice"])
+
     def test_openai_strictness_is_claimed_only_for_compatible_shapes(self) -> None:
         exact = agent.CALCULATOR
         optional = agent.Tool(

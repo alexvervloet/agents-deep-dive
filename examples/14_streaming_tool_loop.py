@@ -47,8 +47,9 @@ QUESTION = "The Plus plan: what does a full year cost, and what's 15% tax on tha
 
 def streaming_agent(system: str, question: str, tools: list, max_steps: int = 6) -> str:
     """The example-03 loop, but each turn STREAMS its text as it arrives."""
-    by_name = {t.name: t for t in tools}
     schema = providers.to_tool_schema(tools)
+    executor = agent.ToolExecutor(tools)
+    context = agent.ExecutionContext.local("streaming-example")
     history = [providers.user_message(question)]
 
     for step in range(max_steps):
@@ -66,15 +67,13 @@ def streaming_agent(system: str, question: str, tools: list, max_steps: int = 6)
         if not turn.tool_calls:
             return turn.text or ""
 
-        # Run each requested tool and feed the results back (same as the basic loop).
+        # Enforce each request and feed the result back (same as the basic loop).
         results = []
         for call in turn.tool_calls:
             args = ", ".join(f"{k}={v!r}" for k, v in call.arguments.items())
-            try:
-                result = str(by_name[call.name].func(**call.arguments))
-            except Exception as e:  # noqa: BLE001 - feed failures back to the model
-                result = f"Error running {call.name}: {e}"
-            print(f"  ↳ {call.name}({args}) -> {result}")
+            outcome = executor.execute(call, context)
+            result = outcome.for_model()
+            print(f"  ↳ {call.name}({args}) -> {result} [{outcome.code}]")
             results.append((call.id, result))
         history += providers.format_tool_results(results)
 

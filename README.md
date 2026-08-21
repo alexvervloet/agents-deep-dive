@@ -191,7 +191,8 @@ model proposal
   -> reject forged identity/tenant fields
   -> validate the complete JSON Schema
   -> authorize trusted session roles
-  -> return a completed replay or require approval
+  -> replay a settled result, or reject the key if the payload changed
+  -> require approval
   -> execute with time/output limits
   -> record a structured outcome and content digests
 ```
@@ -210,7 +211,10 @@ replaying its request returns the stored outcome without issuing another refund.
 [agent/contracts.py](agent/contracts.py) is the reusable implementation. Its
 in-process replay cache deliberately stores even errors that happened after
 dispatch: a timeout or connection failure cannot tell you whether the remote
-effect committed. This prevents a duplicate retry in the teaching process, but a
+effect committed. A settled key is a promise about one specific payload, so a
+repeat carrying *different* arguments is denied (`idempotency_key_reuse`) rather
+than answered from the cache; otherwise the audit record for the second attempt
+would carry the first call's digest and the attempt would leave no trace. This prevents a duplicate retry in the teaching process, but a
 production write must enforce a durable idempotency key transactionally at its
 sink. The thread timeout also stops waiting rather than killing already-running
 Python code; hard cancellation needs a subprocess, worker, or remote deadline.

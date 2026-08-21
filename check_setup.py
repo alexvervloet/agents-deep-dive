@@ -56,6 +56,7 @@ def _get(env, name):
 ALWAYS = [
     ("dotenv", "python-dotenv", "loads PROVIDER/config from .env"),
     ("rich", "rich", "the trace and output in the capstone"),
+    ("jsonschema", "jsonschema", "validates tool calls before execution"),
 ]
 PROVIDER_DEPS = {
     "openai": [("openai", "openai", "OpenAI chat + function calling")],

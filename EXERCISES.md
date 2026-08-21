@@ -176,6 +176,21 @@ effect. These independent perturbations prove the decision did not derive its
 expected result from the proposal itself.
 </details>
 
+**Predict.** A mutating call is replayed by `(request_id, call.id, tool)`. Suppose
+the same `call.id` comes back inside the same request, but this time asking to
+refund a different order for ten times the money. Should the executor return the
+stored result, run the new one, or neither?
+
+<details><summary>▸ Answer</summary>
+
+Neither: it denies with `idempotency_key_reuse`. Returning the stored result would
+answer a question nobody asked and bury the second attempt (the audit record would
+carry the *first* call's argument digest, so the log would not even show it
+happened). Running it would defeat the point of the key. A settled key is a promise
+about one specific payload, which is why the executor compares argument digests and
+not just the key. Stripe's API behaves the same way for the same reason.
+</details>
+
 **Design.** The teaching executor records a timeout and replays it for a repeated
 mutating call. Why not automatically retry, and what must replace this cache in a
 multi-worker production service?
@@ -358,6 +373,35 @@ What never changes: the *model* still never runs anything. It only ever sees the
 menu entry and emits a request. Now even your client doesn't hold the
 implementation; the server does. (For the protocol's other primitives, like resources,
 prompts, HTTP transport, and security, see the MCP deep dive.)
+</details>
+
+**Predict.** You point the client at a *different* team's MCP server. Its schema is
+valid JSON Schema and describes every field it wants, but never mentions
+`additionalProperties`. You pass the discovered tool to `run_agent`. What happens?
+
+<details><summary>▸ Answer</summary>
+
+`ToolExecutor` raises `ValueError` before a single model call, because it refuses
+any schema that has not closed the door on undeclared fields. That is deliberate:
+a schema this loose would let the model slip in an argument nobody described, and
+the repo would rather fail loudly at wiring time than silently forward it.
+`seal_schema()` is the fix, and `as_tools()` applies it to every descriptor as it
+comes off the wire. Note the cost, which is real: if that server quietly accepts a
+field it never declared, sealing rejects a call it would have honored.
+</details>
+
+**Recall.** The server in this repo runs every `tools/call` through the same
+`ToolExecutor` the agent loop uses. The client already validates. Why check twice?
+
+<details><summary>▸ Answer</summary>
+
+Because neither end can verify the other did it. The server has no idea whose model
+is on the other end of the pipe, which prompt it was given, or whether that prompt
+came off an injected web page; "my client validated" is not a fact a server can
+check. Symmetrically, the client cannot audit the server's code. Each side enforces
+the contract at its own trust boundary, which is what makes them boundaries.
+Skipping either is how an internal service ends up trusting arguments that
+originated in text a stranger wrote.
 </details>
 
 ---

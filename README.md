@@ -385,6 +385,26 @@ across the world. [agent/mcp_server.py](agent/mcp_server.py) is the server (it
 serves the very same `calculator` and `search_notes` functions, now over the
 wire); [examples/10_mcp.py](examples/10_mcp.py) is the client.
 
+**A protocol moves the tool, not the trust.** Section 7A's contract applies twice
+here, once on each side of the pipe, and both directions are easy to skip:
+
+- *The client seals what it adopts.* A discovered schema was written by someone
+  else, and MCP does not require `additionalProperties: false`, so most schemas
+  in the wild leave it unset. `ToolExecutor` refuses a schema that loose, on
+  purpose: the omission should be impossible to ignore. `seal_schema()` closes a
+  copy at the point of adoption, which is where a human is actually deciding to
+  trust this server. The tradeoff is real and worth stating: sealing can reject a
+  call a sloppy server would have accepted, because it refuses to forward fields
+  nobody declared. That is the better failure.
+- *The server distrusts its clients.* The one in this repo runs every
+  `tools/call` through the same `ToolExecutor` before dispatch, so a client that
+  invents an argument gets a contract denial rather than a Python call. Your
+  server has no idea whose model is on the other end, or whether that model just
+  read a prompt-injected web page. "The client already validated" is not
+  something a server can ever know.
+
+`tests/test_mcp_contracts.py` holds both halves down.
+
 In production you'd use the official `mcp` SDK and a real transport (HTTP/SSE),
 and your provider can often skip the client entirely: the Claude API connects to
 remote MCP servers for you (its MCP connector), and the OpenAI stack has an

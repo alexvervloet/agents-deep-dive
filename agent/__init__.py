@@ -5,6 +5,7 @@ Built to be *read*. The pieces:
 
   tools.py      what a tool is (name + description + schema + function), and a
                   safe default toolbox (calculator, search_notes, save_note)
+  contracts.py  validates, authorizes, bounds, executes, and audits tool calls
   providers.py  the ONLY provider-specific file: normalizes a tool-calling turn
                   across the openai/claude stacks
   loop.py       run_agent: the while-loop that IS the agent, plus a Tracer
@@ -16,6 +17,7 @@ Typical use:
     print(result.answer)
 """
 
+from .contracts import ExecutionContext, ToolAuditRecord, ToolExecutor, ToolOutcome
 from .loop import AgentResult, Step, Tracer, run_agent
 from .providers import (
     HostedResult,
@@ -40,6 +42,10 @@ __all__ = [
     "CALCULATOR",
     "SEARCH_NOTES",
     "SAVE_NOTE",
+    "ExecutionContext",
+    "ToolExecutor",
+    "ToolOutcome",
+    "ToolAuditRecord",
     "run_agent",
     "AgentResult",
     "Step",

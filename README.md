@@ -534,6 +534,7 @@ examples/
   18_tool_contracts.py     ← validate and authorize before effects (offline)
 tests/
   test_tool_contracts.py   ← adversarial and counterfactual contract checks
+  test_mcp_contracts.py    ← protocol calls cross the same boundary
 ```
 
 (`workspace/` is created by the `save_note` tool and is git-ignored.)

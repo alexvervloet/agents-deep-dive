@@ -47,9 +47,16 @@ else:
     print(f"  args: {call.arguments}")
     print(f"  id:   {call.id}")
 
-    # WE run it; the model only asked.
-    result = agent.CALCULATOR.func(**call.arguments)
-    print(f"\nWe run calculator{tuple(call.arguments.values())} -> {result}")
+    # WE decide whether to run it; the model only asked. Even this first lesson
+    # crosses the same local contract boundary used by the complete loop.
+    outcome = agent.ToolExecutor(tools).execute(
+        call,
+        agent.ExecutionContext.local("example-02"),
+    )
+    print(
+        f"\nWe validate and run calculator{tuple(call.arguments.values())} "
+        f"-> {outcome.for_model()} ({outcome.code})"
+    )
 
 print(
     "\nThat's one turn: question -> tool *request* -> you execute it. To turn the "

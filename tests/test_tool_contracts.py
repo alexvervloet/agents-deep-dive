@@ -535,6 +535,15 @@ class ToolContractTests(unittest.TestCase):
 
         self.assertFalse(first.steps[0].replayed)
         self.assertTrue(second.steps[0].replayed)
+        for step in (first.steps[0], second.steps[0]):
+            self.assertEqual(step.status, "ok")
+            self.assertIs(step.approval, agent.ApprovalState.NOT_REQUIRED)
+            self.assertTrue(step.arguments_sha256)
+            self.assertTrue(step.output_sha256)
+        self.assertEqual(
+            first.steps[0].arguments_sha256, second.steps[0].arguments_sha256
+        )
+        self.assertEqual(first.steps[0].output_sha256, second.steps[0].output_sha256)
         self.assertEqual(effects, ["invoice"])
 
     def test_openai_strictness_is_claimed_only_for_compatible_shapes(self) -> None:

@@ -18,6 +18,11 @@ ordinary `Tool` object (the same dataclass from `agent/tools.py`), so an
 MCP-served tool drops into the loop from example 03 unchanged. To the agent loop,
 "a local function" and "a tool on a server across the world" look identical.
 
+Identical in *shape*, that is, not in trust. The schema arrives from a stranger,
+so the client seals it before adopting it, and the server validates every call it
+receives rather than believing its clients. Both sides run the same contract from
+section 7A, because "the other end already checked" is never a thing you know.
+
 It's fully offline: the protocol is just JSON lines over a pipe, and the tools
 (calculator, search_notes) run locally in the server process. No model, no key.
 """
@@ -29,6 +34,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from agent.contracts import seal_schema
 from agent.tools import Tool
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,7 +85,13 @@ class MCPClient:
     def as_tools(self) -> list[Tool]:
         """Turn every remote tool into a local `Tool` object. Its `func` is a
         closure that makes a `tools/call` over the protocol, so the rest of the
-        repo (the loop, the tracer, approval gates) treats it like any other tool."""
+        repo (the loop, the tracer, approval gates) treats it like any other tool.
+
+        One thing does NOT come across the wire for free: a schema you can trust.
+        This server closes its schemas, but MCP does not require it, and most
+        servers you meet will leave `additionalProperties` unset. `seal_schema`
+        closes the copy we adopt, so an undeclared field the model invents is
+        refused here instead of being forwarded to someone else's system."""
         tools = []
         for desc in self.list_tools():
             name = desc["name"]
@@ -87,7 +99,8 @@ class MCPClient:
                 Tool(
                     name=name,
                     description=desc["description"],
-                    parameters=desc["inputSchema"],  # MCP's key for the JSON Schema
+                    # MCP's key for the JSON Schema, sealed on the way in.
+                    parameters=seal_schema(desc["inputSchema"]),
                     func=lambda _name=name, **kwargs: self.call_tool(_name, kwargs),
                 )
             )

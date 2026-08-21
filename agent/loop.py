@@ -18,16 +18,18 @@ Three pieces of control logic worth seeing here, because they're what make a loo
 safe instead of a runaway:
 
   - max_steps: a hard ceiling so a confused model can't loop forever.
-  - error handling: a tool that raises returns its error *as the result*, so the
-    model can see what went wrong and try something else instead of crashing.
-  - approval: a `dangerous` tool can be gated behind an `approve` callback, so the
-    human-in-the-loop. A denied call comes back as a normal result, and the agent
-    adapts.
+  - contract execution: every model-proposed call is locally validated,
+    authorized, bounded, and recorded before its function can run.
+  - error handling: a structured tool failure returns *as the result*, so the
+    model can adapt instead of crashing the loop.
+  - approval: a `dangerous` tool fails closed unless an `approve` callback allows
+    it. A denial comes back as a normal result, and the agent adapts.
 """
 
 from dataclasses import dataclass, field
 
 from . import providers
+from .contracts import ExecutionContext, ToolExecutor
 
 
 @dataclass
@@ -38,6 +40,10 @@ class Step:
     arguments: dict
     result: str
     approved: bool = True
+    status: str = "ok"
+    replayed: bool = False
+    arguments_sha256: str = ""
+    output_sha256: str | None = None
 
 
 @dataclass
@@ -83,20 +89,28 @@ def run_agent(
     approve=None,
     tracer: Tracer | None = None,
     history: list | None = None,
+    context: ExecutionContext | None = None,
+    executor: ToolExecutor | None = None,
 ) -> AgentResult:
     """Run the agentic loop until the model gives a final answer or hits max_steps.
 
     - `tools`: a list of Tool objects (see agent/tools.py).
-    - `approve`: optional callback `(ToolCall) -> bool`; consulted before running a
-      tool whose `dangerous` flag is set. Return False to deny.
+    - `approve`: callback `(ToolCall) -> bool`; dangerous tools fail closed when
+      it is absent and run only when it returns True.
     - `tracer`: optional Tracer to print each step.
     - `history`: optional message list. Pass the SAME list across calls to give the
       agent memory of earlier turns. The loop appends this turn's messages to it
       in place. Omit it for a one-shot run. (The API itself is stateless; "memory"
       is just you re-sending the growing list, exactly as in the sibling repos.)
+    - `context`: trusted request identity, tenant, and roles. The local teaching
+      context is used when omitted; server applications should always pass their
+      authenticated context.
+    - `executor`: optional reusable ToolExecutor. Reuse it across retries of the
+      same request so its bounded in-process replay cache can recognize them.
     """
-    by_name = {t.name: t for t in tools}
     tool_schema = providers.to_tool_schema(tools)
+    context = context or ExecutionContext.local()
+    executor = executor or ToolExecutor(tools)
     if history is None:
         history = []
     history.append(providers.user_message(user_input))
@@ -117,23 +131,23 @@ def run_agent(
         for call in turn.tool_calls:
             if tracer:
                 tracer.on_tool_call(call)
-            tool = by_name.get(call.name)
-            approved = True
-
-            if tool is None:
-                result = f"Error: no tool named {call.name!r}."
-            elif tool.dangerous and approve is not None and not approve(call):
-                approved = False
-                result = "Error: the user denied permission to run this tool."
-            else:
-                try:
-                    result = str(tool.func(**call.arguments))
-                except Exception as e:  # noqa: BLE001 - feed any failure back to the model
-                    result = f"Error running {call.name}: {e}"
+            outcome = executor.execute(call, context, approve=approve)
+            result = outcome.for_model()
 
             if tracer:
                 tracer.on_tool_result(call, result)
-            steps.append(Step(tool=call.name, arguments=call.arguments, result=result, approved=approved))
+            steps.append(
+                Step(
+                    tool=call.name,
+                    arguments=call.arguments,
+                    result=result,
+                    approved=outcome.approved,
+                    status=outcome.code,
+                    replayed=outcome.replayed,
+                    arguments_sha256=outcome.arguments_sha256,
+                    output_sha256=outcome.output_sha256,
+                )
+            )
             results.append((call.id, result))
 
         history += providers.format_tool_results(results)

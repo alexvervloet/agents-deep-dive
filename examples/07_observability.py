@@ -48,12 +48,17 @@ print(f"\nFinal answer: {result.answer}")
 print("\nStructured trace (result.steps): what you'd log in production:")
 for i, s in enumerate(result.steps, start=1):
     preview = " ".join(s.result.split())[:70]
-    flags = f"status={s.status} approved={s.approved}"
-    if s.replayed:
-        flags += " replayed=True"
+    flags = (
+        f"status={s.status} approval={s.approval.value} "
+        f"replayed={s.replayed}"
+    )
     print(f"  {i}. {s.tool}({s.arguments})  {flags}")
     print(f"     -> {preview}")
     print(f"     args sha256={s.arguments_sha256[:12]}...")
+    output_digest = (
+        f"{s.output_sha256[:12]}..." if s.output_sha256 is not None else "none"
+    )
+    print(f"     output sha256={output_digest}")
 
 print(
     "\nNo trace, no debugging: an agent's value and its failures both live in the "
@@ -61,9 +66,10 @@ print(
 )
 print(
     "\nRead `status` first: it is the field that says WHY, and it is what an eval "
-    "or an alert should key on instead of matching error prose. `approved` answers "
-    "only 'did this clear the approval gate', so a call rejected earlier (a bad "
-    "schema, an unknown tool) also shows approved=False without a human ever "
-    "having said no. The digests let you prove two runs sent the same arguments "
-    "without copying customer data into your logs."
+    "or an alert should key on instead of matching error prose. `approval` names "
+    "how far the call reached through that separate gate: `not_reached`, "
+    "`not_required`, `required`, `approved`, `denied`, or `error`. `replayed` "
+    "distinguishes an original dispatch from a cached result. The argument and "
+    "output digests let you compare attempts without copying customer data or "
+    "tool results into your logs; `none` means no output crossed the boundary."
 )

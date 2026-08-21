@@ -6,12 +6,12 @@ identity and tenant data from ``ExecutionContext``, checks roles and approval,
 deduplicates mutating calls, bounds execution, and records structured evidence.
 
 The replay cache is intentionally bounded, in-process, and optimized for this
-single-process teaching loop. It caches every post-dispatch outcome because an
-exception or timeout may have happened after a side effect committed. A real
-service should enforce the same idempotency key transactionally at the sink in a
-durable store. Likewise, a thread timeout stops waiting but cannot kill work that
-is already running; use a subprocess, job worker, or remote service deadline for
-hard cancellation.
+single-process teaching loop. It does not coordinate duplicate calls already in
+flight. It caches every post-dispatch outcome because an exception or timeout may
+have happened after a side effect committed. A real service should enforce the
+same idempotency key transactionally at the sink in a durable store. Likewise, a
+thread timeout stops waiting but cannot kill work that is already running; use a
+subprocess, job worker, or remote service deadline for hard cancellation.
 """
 
 from __future__ import annotations

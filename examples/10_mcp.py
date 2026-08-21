@@ -65,10 +65,13 @@ class MCPClient:
         request = {"jsonrpc": "2.0", "id": self._next_id, "method": method}
         if params is not None:
             request["params"] = params
-        assert self._proc.stdin and self._proc.stdout
-        self._proc.stdin.write(json.dumps(request) + "\n")
-        self._proc.stdin.flush()
-        response = json.loads(self._proc.stdout.readline())
+        stdin = self._proc.stdin
+        stdout = self._proc.stdout
+        if stdin is None or stdout is None:
+            raise RuntimeError("MCP transport is missing its stdio streams")
+        stdin.write(json.dumps(request) + "\n")
+        stdin.flush()
+        response = json.loads(stdout.readline())
         if "error" in response:
             raise RuntimeError(response["error"]["message"])
         return response["result"]

@@ -1,6 +1,8 @@
 """Prove protocol-served tools cross the same local contract boundary."""
 
+import runpy
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import agent
@@ -20,6 +22,15 @@ DISCOVERED_SCHEMA = {
 
 
 class MCPContractTests(unittest.TestCase):
+    def test_client_refuses_a_transport_without_stdio_streams(self) -> None:
+        namespace = runpy.run_path("examples/10_mcp.py")
+        client = object.__new__(namespace["MCPClient"])
+        client._proc = SimpleNamespace(stdin=None, stdout=None)
+        client._next_id = 0
+
+        with self.assertRaisesRegex(RuntimeError, "missing its stdio streams"):
+            client._call("tools/list")
+
     def test_server_rejects_undeclared_arguments_instead_of_dispatching(self) -> None:
         response = handle(
             {

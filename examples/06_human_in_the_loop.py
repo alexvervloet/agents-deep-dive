@@ -57,7 +57,7 @@ result = agent.run_agent(
 )
 
 print(f"\nFinal answer: {result.answer}")
-denied = any(not s.approved for s in result.steps)
+denied = any(s.approval is agent.ApprovalState.DENIED for s in result.steps)
 if denied:
     print(
         "(you denied a tool call; notice the agent acknowledged it instead of forcing it)"

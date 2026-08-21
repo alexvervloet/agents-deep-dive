@@ -210,10 +210,30 @@ class ToolContractTests(unittest.TestCase):
         )
 
         self.assertEqual(wrong_role.code, "not_authorized")
+        self.assertIs(wrong_role.approval, agent.ApprovalState.NOT_REACHED)
         self.assertEqual(no_approval.code, "approval_required")
+        self.assertIs(no_approval.approval, agent.ApprovalState.REQUIRED)
         self.assertEqual(denied.code, "approval_denied")
+        self.assertIs(denied.approval, agent.ApprovalState.DENIED)
         self.assertEqual(allowed.code, "ok")
+        self.assertIs(allowed.approval, agent.ApprovalState.APPROVED)
         self.assertEqual(len(effects), 1)
+
+    def test_safe_tool_and_failed_approval_have_distinct_states(self) -> None:
+        safe = agent.ToolExecutor([agent.CALCULATOR]).execute(
+            agent.ToolCall("calculate", "calculator", {"expression": "6 * 7"}),
+            _billing_context(),
+        )
+        failed = agent.ToolExecutor([_refund_tool([])]).execute(
+            _valid_call("approval-error"),
+            _billing_context(),
+            approve=lambda _call: (_ for _ in ()).throw(RuntimeError("offline")),
+        )
+
+        self.assertEqual(safe.code, "ok")
+        self.assertIs(safe.approval, agent.ApprovalState.NOT_REQUIRED)
+        self.assertEqual(failed.code, "approval_error")
+        self.assertIs(failed.approval, agent.ApprovalState.ERROR)
 
     def test_mutating_replay_scope_uses_request_call_and_tool(self) -> None:
         effects: list[dict] = []

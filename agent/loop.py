@@ -29,7 +29,7 @@ safe instead of a runaway:
 from dataclasses import dataclass, field
 
 from . import providers
-from .contracts import ExecutionContext, ToolExecutor
+from .contracts import ApprovalState, ExecutionContext, ToolExecutor
 
 
 @dataclass
@@ -39,7 +39,7 @@ class Step:
     tool: str
     arguments: dict
     result: str
-    approved: bool = True
+    approval: ApprovalState = ApprovalState.NOT_REACHED
     status: str = "ok"
     replayed: bool = False
     arguments_sha256: str = ""
@@ -145,7 +145,7 @@ def run_agent(
                     tool=call.name,
                     arguments=call.arguments,
                     result=result,
-                    approved=outcome.approved,
+                    approval=outcome.approval,
                     status=outcome.code,
                     replayed=outcome.replayed,
                     arguments_sha256=outcome.arguments_sha256,

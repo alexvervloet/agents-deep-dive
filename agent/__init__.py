@@ -19,6 +19,7 @@ Typical use:
 """
 
 from .contracts import (
+    ApprovalState,
     ExecutionContext,
     ToolAuditRecord,
     ToolExecutor,
@@ -49,6 +50,7 @@ __all__ = [
     "CALCULATOR",
     "SEARCH_NOTES",
     "SAVE_NOTE",
+    "ApprovalState",
     "ExecutionContext",
     "ToolExecutor",
     "ToolOutcome",

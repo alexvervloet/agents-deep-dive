@@ -23,6 +23,7 @@ import uuid
 from collections import OrderedDict, deque
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from dataclasses import dataclass, replace
+from enum import Enum
 from threading import Lock
 from typing import Callable
 
@@ -33,6 +34,17 @@ from .tools import Tool
 
 ApprovalCallback = Callable[[ToolCall], bool]
 _CONTEXT_FIELDS = frozenset({"request_id", "subject_id", "tenant_id"})
+
+
+class ApprovalState(str, Enum):
+    """Describe exactly how far a call progressed through the approval gate."""
+
+    NOT_REACHED = "not_reached"
+    NOT_REQUIRED = "not_required"
+    REQUIRED = "required"
+    APPROVED = "approved"
+    DENIED = "denied"
+    ERROR = "error"
 
 
 @dataclass(frozen=True)
@@ -68,18 +80,17 @@ class ToolOutcome:
     """A stable result category plus provenance safe to feed to logs and tests.
 
     ``code`` is the field to read when you want to know what happened; it is the
-    only one that distinguishes the reasons. ``approved`` answers the narrower
-    question "did this call clear the approval gate", and it is False for every
-    denial reached before that gate, including a schema error on a tool nobody
-    would have been asked about. Read the two together or you will misread a
-    malformed call as a human saying no.
+    only one that distinguishes the reasons. ``approval`` separately records
+    whether the gate was not reached, unnecessary, missing, approved, denied, or
+    failed. It is deliberately not a Boolean: "schema rejected" and "human said
+    no" are different states and must not share a value consumers can misread.
     """
 
     ok: bool
     code: str
     message: str
     output: str | None
-    approved: bool
+    approval: ApprovalState
     replayed: bool
     arguments_sha256: str
     output_sha256: str | None
@@ -103,7 +114,7 @@ class ToolAuditRecord:
     subject_id: str
     tenant_id: str
     code: str
-    approved: bool
+    approval: ApprovalState
     replayed: bool
     arguments_sha256: str
     output_sha256: str | None
@@ -248,7 +259,7 @@ class ToolExecutor:
                     subject_id=context.subject_id,
                     tenant_id=context.tenant_id,
                     code=outcome.code,
-                    approved=outcome.approved,
+                    approval=outcome.approval,
                     replayed=outcome.replayed,
                     arguments_sha256=outcome.arguments_sha256,
                     output_sha256=outcome.output_sha256,
@@ -265,7 +276,7 @@ class ToolExecutor:
         message: str,
         arguments_sha256: str,
         *,
-        approved: bool = False,
+        approval: ApprovalState = ApprovalState.NOT_REACHED,
     ) -> ToolOutcome:
         return self._record(
             context,
@@ -275,7 +286,7 @@ class ToolExecutor:
                 code=code,
                 message=message,
                 output=None,
-                approved=approved,
+                approval=approval,
                 replayed=False,
                 arguments_sha256=arguments_sha256,
                 output_sha256=None,
@@ -407,7 +418,7 @@ class ToolExecutor:
                     replace(cached, replayed=True, duration_ms=0.0),
                 )
 
-        approved = not tool.dangerous
+        approval = ApprovalState.NOT_REQUIRED
         if tool.dangerous:
             if approve is None:
                 return self._deny(
@@ -416,6 +427,7 @@ class ToolExecutor:
                     "approval_required",
                     "dangerous tool has no approval callback",
                     arguments_digest,
+                    approval=ApprovalState.REQUIRED,
                 )
             try:
                 approved = bool(approve(call))
@@ -426,14 +438,18 @@ class ToolExecutor:
                     "approval_error",
                     f"approval callback failed: {type(exc).__name__}: {exc}",
                     arguments_digest,
+                    approval=ApprovalState.ERROR,
                 )
-            if not approved:
+            if approved:
+                approval = ApprovalState.APPROVED
+            else:
                 return self._deny(
                     context,
                     call,
                     "approval_denied",
                     "user denied permission to run this tool",
                     arguments_digest,
+                    approval=ApprovalState.DENIED,
                 )
 
         started = time.perf_counter()
@@ -448,7 +464,7 @@ class ToolExecutor:
                 "timeout",
                 f"tool exceeded {tool.timeout_seconds:g}s",
                 None,
-                approved,
+                approval,
                 False,
                 arguments_digest,
                 None,
@@ -460,7 +476,7 @@ class ToolExecutor:
                 "tool_error",
                 f"{type(exc).__name__}: {exc}",
                 None,
-                approved,
+                approval,
                 False,
                 arguments_digest,
                 None,
@@ -477,7 +493,7 @@ class ToolExecutor:
                     f"tool returned {output_size} bytes; limit is "
                     f"{tool.maximum_output_bytes}",
                     None,
-                    approved,
+                    approval,
                     False,
                     arguments_digest,
                     output_digest,
@@ -489,7 +505,7 @@ class ToolExecutor:
                     "ok",
                     "tool executed",
                     output,
-                    approved,
+                    approval,
                     False,
                     arguments_digest,
                     output_digest,

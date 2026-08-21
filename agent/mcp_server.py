@@ -36,6 +36,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # The tools we expose are the SAME functions the rest of the repo uses: we're
 # only changing how they're *reached* (a protocol), not what they *are*.
+from agent.contracts import ExecutionContext, ToolExecutor
+from agent.providers import ToolCall
 from agent.tools import CALCULATOR, SEARCH_NOTES
 
 
@@ -51,6 +53,13 @@ def _descriptor(tool):
 
 
 _TOOLS = {t.name: (_descriptor(t), t.func) for t in (CALCULATOR, SEARCH_NOTES)}
+_EXECUTOR = ToolExecutor([CALCULATOR, SEARCH_NOTES])
+_CONTEXT = ExecutionContext(
+    request_id="mcp-server-process",
+    subject_id="local-mcp-client",
+    tenant_id="local-workspace",
+    roles=frozenset({"user"}),
+)
 
 
 def _result(request_id, result):
@@ -81,15 +90,19 @@ def handle(request: dict) -> dict | None:
         entry = _TOOLS.get(name or "")
         if entry is None:
             return _error(request_id, -32602, f"unknown tool {name!r}")
-        _, func = entry
-        try:
-            output = func(**arguments)
-        except Exception as exc:  # tool errors come back in-band, not as crashes
+        outcome = _EXECUTOR.execute(
+            ToolCall(str(request_id), str(name), arguments),
+            _CONTEXT,
+        )
+        if not outcome.ok:
             return _result(request_id, {
-                "content": [{"type": "text", "text": f"error: {exc}"}],
+                "content": [{"type": "text", "text": outcome.for_model()}],
                 "isError": True,
             })
-        return _result(request_id, {"content": [{"type": "text", "text": str(output)}]})
+        return _result(
+            request_id,
+            {"content": [{"type": "text", "text": outcome.for_model()}]},
+        )
 
     if request_id is None:
         return None  # a notification (no id), nothing to reply

@@ -252,6 +252,10 @@ class ToolExecutor:
         Mutating calls use ``(request_id, call.id, tool name)`` as the local replay
         key. Keeping the client request ID outside model arguments binds retries to
         the application request rather than letting the model choose their scope.
+        A repeat of that key must also carry the same effective arguments: reusing
+        one key for a different payload is a caller bug or an attempt to have a
+        settled decision stand in for a new one, so it is denied rather than
+        answered from the cache.
         """
 
         proposal_digest = _json_digest(call.arguments)
@@ -335,6 +339,14 @@ class ToolExecutor:
                 if cached is not None:
                     self._replays.move_to_end(replay_key)
             if cached is not None:
+                if cached.arguments_sha256 != arguments_digest:
+                    return self._deny(
+                        context,
+                        call,
+                        "idempotency_key_reuse",
+                        "this call ID already settled different arguments",
+                        arguments_digest,
+                    )
                 return self._record(
                     context,
                     call,

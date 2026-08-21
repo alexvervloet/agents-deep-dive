@@ -8,8 +8,8 @@ How to use it: work the section first, then come back. **Commit to an answer
 before you run or reveal.** The prediction is where the learning happens. Answers
 are hidden behind ▸ toggles.
 
-> Examples 01, 10, and 18 are **(offline)**: no API call, no cost. The rest make
-> small, cheap calls.
+> Examples 01, 07, 10, and 18 are **(offline)**: no API call, no cost. The rest
+> make small, cheap calls.
 
 ---
 
@@ -207,7 +207,19 @@ workers from racing.
 
 ---
 
-## Section 8: Observability
+## Section 8: Observability **(offline)**
+
+**Predict, then run.** In `examples/07_observability.py`, the same mutating call
+is proposed twice with one trusted request context. Which fields should differ
+between the two `Step` records, and how many events should reach the sink?
+
+<details><summary>▸ Answer</summary>
+
+Only `replayed` changes: it is `False` for the dispatch and `True` for the cached
+retry. Both steps keep `status=ok`, `approval=approved`, and the same argument and
+output digests because they describe the same settled operation. Exactly one event
+reaches the sink.
+</details>
 
 **Recall.** Why is a step trace essential for agents specifically, more than for a
 single LLM call?

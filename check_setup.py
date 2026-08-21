@@ -141,10 +141,10 @@ def main():
     if py and deps and keys:
         print(_c("All set! 🎉", "1;32"))
         print("Start here:  secrun python examples/01_tools.py")
-        print("(Example 01 is offline and needs no key.)")
+        print("(Examples 01, 10, and 18 are offline and need no key.)")
         return 0
     print(_c("Not ready yet. Fix the ✗ items above, then run this again.", "1;31"))
-    print("(Example 01 is offline, so you can run that without a key.)")
+    print("(Examples 01, 10, and 18 are offline, so you can run those without a key.)")
     return 1
 
 

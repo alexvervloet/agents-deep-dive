@@ -39,6 +39,7 @@ class ToolCall:
     id: str
     name: str
     arguments: dict
+    parse_error: str | None = None
 
 
 @dataclass
@@ -98,6 +99,18 @@ def _anthropic_client():
 def user_message(text: str) -> dict:
     """A plain user message, the same shape on both providers."""
     return {"role": "user", "content": text}
+
+
+def _decode_tool_arguments(raw: str) -> tuple[dict, str | None]:
+    """Preserve malformed provider output as a denial reason, never empty input."""
+
+    try:
+        parsed = json.loads(raw or "{}")
+    except json.JSONDecodeError as exc:
+        return {}, f"arguments were not valid JSON: {exc.msg}"
+    if not isinstance(parsed, dict):
+        return {}, "tool arguments must be a JSON object"
+    return parsed, None
 
 
 def _openai_strict_compatible(schema: object) -> bool:
@@ -164,11 +177,15 @@ def run_turn(system: str, history: list, tool_schema: list) -> Turn:
         for tc in msg.tool_calls or []:
             if tc.type != "function":
                 continue
-            try:
-                args = json.loads(tc.function.arguments or "{}")
-            except json.JSONDecodeError:
-                args = {}
-            calls.append(ToolCall(id=tc.id, name=tc.function.name, arguments=args))
+            args, parse_error = _decode_tool_arguments(tc.function.arguments or "{}")
+            calls.append(
+                ToolCall(
+                    id=tc.id,
+                    name=tc.function.name,
+                    arguments=args,
+                    parse_error=parse_error,
+                )
+            )
         # The SDK message object can be appended back to messages as-is.
         return Turn(text=msg.content, tool_calls=calls, raw_assistant=msg)
 
@@ -230,11 +247,15 @@ def stream_turn(system: str, history: list, tool_schema: list, on_text=None) -> 
         calls, raw_tool_calls = [], []
         for idx in sorted(acc):
             slot = acc[idx]
-            try:
-                args = json.loads(slot["args"] or "{}")
-            except json.JSONDecodeError:
-                args = {}
-            calls.append(ToolCall(id=slot["id"], name=slot["name"], arguments=args))
+            args, parse_error = _decode_tool_arguments(slot["args"] or "{}")
+            calls.append(
+                ToolCall(
+                    id=slot["id"],
+                    name=slot["name"],
+                    arguments=args,
+                    parse_error=parse_error,
+                )
+            )
             raw_tool_calls.append({
                 "id": slot["id"], "type": "function",
                 "function": {"name": slot["name"], "arguments": slot["args"] or "{}"},

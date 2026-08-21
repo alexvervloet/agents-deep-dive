@@ -92,6 +92,31 @@ def _valid_call(call_id: str = "call-1", **changes: object) -> agent.ToolCall:
 
 
 class ToolContractTests(unittest.TestCase):
+    def test_malformed_provider_json_cannot_become_a_valid_empty_call(self) -> None:
+        dispatches: list[str] = []
+        tool = agent.Tool(
+            "empty",
+            "Accept no model arguments.",
+            {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False,
+            },
+            lambda: dispatches.append("ran"),
+        )
+        call = agent.ToolCall(
+            "malformed-1",
+            "empty",
+            {},
+            parse_error="arguments were not valid JSON",
+        )
+
+        outcome = agent.ToolExecutor([tool]).execute(call, _billing_context())
+
+        self.assertEqual(outcome.code, "invalid_arguments")
+        self.assertEqual(dispatches, [])
+
     def test_every_schema_constraint_blocks_dispatch(self) -> None:
         invalid_arguments = {
             "extra": {

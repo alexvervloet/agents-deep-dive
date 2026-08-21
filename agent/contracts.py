@@ -264,6 +264,14 @@ class ToolExecutor:
                 f"no tool named {call.name!r}",
                 proposal_digest,
             )
+        if call.parse_error is not None:
+            return self._deny(
+                context,
+                call,
+                "invalid_arguments",
+                call.parse_error,
+                proposal_digest,
+            )
         if not isinstance(call.arguments, dict):
             return self._deny(
                 context,

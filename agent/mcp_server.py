@@ -41,9 +41,11 @@ from agent.providers import ToolCall
 from agent.tools import CALCULATOR, SEARCH_NOTES
 
 
-# Map a tool name to (MCP descriptor, the function that runs it). MCP uses
-# `inputSchema` (camelCase) where this repo's Tool uses `parameters`; same JSON
-# Schema, different key: so we translate once, here.
+# Map a tool name to its MCP descriptor. MCP uses `inputSchema` (camelCase) where
+# this repo's Tool uses `parameters`; same JSON Schema, different key, so we
+# translate once, here. The functions themselves are reached only through
+# _EXECUTOR below: a client is no more trusted than a model, so nothing on this
+# server calls a tool without a contract decision first.
 def _descriptor(tool):
     return {
         "name": tool.name,
@@ -52,7 +54,7 @@ def _descriptor(tool):
     }
 
 
-_TOOLS = {t.name: (_descriptor(t), t.func) for t in (CALCULATOR, SEARCH_NOTES)}
+_TOOLS = {t.name: _descriptor(t) for t in (CALCULATOR, SEARCH_NOTES)}
 _EXECUTOR = ToolExecutor([CALCULATOR, SEARCH_NOTES])
 _CONTEXT = ExecutionContext(
     request_id="mcp-server-process",
@@ -81,14 +83,13 @@ def handle(request: dict) -> dict | None:
         return _result(request_id, {"serverInfo": {"name": "nimbus-tools", "version": "0.1"}})
 
     if method == "tools/list":
-        return _result(request_id, {"tools": [desc for desc, _ in _TOOLS.values()]})
+        return _result(request_id, {"tools": list(_TOOLS.values())})
 
     if method == "tools/call":
         params = request.get("params") or {}
         name = params.get("name")
         arguments = params.get("arguments") or {}
-        entry = _TOOLS.get(name or "")
-        if entry is None:
+        if name not in _TOOLS:
             return _error(request_id, -32602, f"unknown tool {name!r}")
         outcome = _EXECUTOR.execute(
             ToolCall(str(request_id), str(name), arguments),

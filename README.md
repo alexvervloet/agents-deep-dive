@@ -49,7 +49,7 @@ pip install -r requirements.txt
 # 3. Choose your provider (set PROVIDER in .env); your key loads separately
 cp .env.example .env
 #    Your API key does NOT go in .env. Store it in your OS keychain and run
-#    lessons with `secrun`: 2-minute setup in ../SECRETS.md.
+#    lessons with `secrun`: 2-minute setup in ../docs/SECRETS.md.
 
 # 4. Confirm everything is wired up (makes no API call, costs nothing)
 secrun python check_setup.py       # secrun injects your key so the check can see it
@@ -576,7 +576,7 @@ Run `secrun python check_setup.py` first; it catches most problems. Then, by sym
 
 | What you see | What it means / the fix |
 |--------------|-------------------------|
-| `PROVIDER=... needs ... in the environment` | Set `PROVIDER` in `.env`, then load the key from your keychain by running under `secrun`. See [SECRETS.md](../SECRETS.md). |
+| `PROVIDER=... needs ... in the environment` | Set `PROVIDER` in `.env`, then load the key from your keychain by running under `secrun`. See [SECRETS.md](../docs/SECRETS.md). |
 | `ModuleNotFoundError` (openai / anthropic / rich) | Dependencies aren't installed or the venv isn't active. `source .venv/bin/activate` then `pip install -r requirements.txt`. |
 | The agent answers math wrong / makes things up | It's not using its tools. Strengthen the system prompt ("use the calculator for arithmetic; don't guess product facts"). Tool *descriptions and instructions* drive tool use. |
 | "(stopped: reached the step limit...)" | The task needed more steps than `max_steps`. Raise it (`--max-steps` on the capstone), or simplify the task. |

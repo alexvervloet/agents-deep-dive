@@ -56,7 +56,7 @@ load_dotenv()
 if not os.getenv("ANTHROPIC_API_KEY"):
     sys.exit(
         "This example is Anthropic-specific (tool search and PTC are Claude features).\n"
-        "Set ANTHROPIC_API_KEY via secrun (see ../SECRETS.md) and try again."
+        "Set ANTHROPIC_API_KEY via secrun (see ../docs/SECRETS.md) and try again."
     )
 
 import anthropic  # noqa: E402

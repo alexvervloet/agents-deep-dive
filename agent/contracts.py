@@ -112,6 +112,52 @@ def _json_digest(value: object) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+# JSON Schema keys whose values are themselves schemas. Listing them explicitly
+# keeps `seal_schema` from wandering into `enum`/`const`, where a literal value
+# may happen to look like a schema.
+_SCHEMA_MAP_KEYS = ("properties", "patternProperties", "$defs", "definitions")
+_SCHEMA_LIST_KEYS = ("anyOf", "oneOf", "allOf", "prefixItems")
+_SCHEMA_KEYS = ("items", "not", "if", "then", "else")
+
+
+def seal_schema(schema: dict) -> dict:
+    """Return a copy of a schema with every object closed to undeclared fields.
+
+    Tools you write should set ``additionalProperties: false`` themselves, and
+    ``ToolExecutor`` refuses anything looser so the omission cannot pass silently.
+    Schemas you *discover* are different: an MCP server, a plugin registry, or a
+    partner API publishes a schema you did not write and often did not close.
+    Sealing is how you adopt one, done once and visibly at the boundary rather
+    than by weakening the executor for every tool.
+
+    Sealing only narrows what the model may propose, which is the safe direction.
+    The tradeoff is real: if a remote tool quietly accepts a field it never
+    declared, a sealed schema rejects a call that server would have honored. That
+    is the price of refusing to forward arguments nobody described, and it is a
+    better failure than forwarding an injected field to someone else's system.
+    """
+
+    sealed: dict = {}
+    for key, value in schema.items():
+        if key in _SCHEMA_MAP_KEYS and isinstance(value, dict):
+            sealed[key] = {
+                name: seal_schema(sub) if isinstance(sub, dict) else sub
+                for name, sub in value.items()
+            }
+        elif key in _SCHEMA_LIST_KEYS and isinstance(value, list):
+            sealed[key] = [
+                seal_schema(item) if isinstance(item, dict) else item
+                for item in value
+            ]
+        elif key in _SCHEMA_KEYS and isinstance(value, dict):
+            sealed[key] = seal_schema(value)
+        else:
+            sealed[key] = value
+    if sealed.get("type") == "object":
+        sealed["additionalProperties"] = False
+    return sealed
+
+
 def _text_digest(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 

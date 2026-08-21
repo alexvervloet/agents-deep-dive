@@ -134,7 +134,8 @@ def search_notes(query: str) -> str:
 
 def save_note(title: str, body: str) -> str:
     """Write a note into ./workspace/. This has a side effect on disk, which is
-    why the tool is marked dangerous and the loop can gate it behind approval."""
+    why the tool is marked dangerous (no approval callback, no write) and mutating
+    (the same call ID can't commit the write twice)."""
     os.makedirs(WORKSPACE, exist_ok=True)
     safe = re.sub(r"[^a-z0-9_-]+", "_", title.lower()).strip("_") or "note"
     path = os.path.join(WORKSPACE, safe + ".md")

@@ -4,6 +4,9 @@ python-dotenv>=1.0.0
 # rich renders the agent's step-by-step trace and the capstone's output.
 rich>=13.0.0
 
+# jsonschema enforces tool input contracts locally before any function runs.
+jsonschema>=4.0,<5
+
 # --- Provider SDKs ---
 # You only strictly need the one matching your PROVIDER (see .env). Both are
 # light, and installing both lets you switch stacks with one env-var change.

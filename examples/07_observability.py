@@ -48,10 +48,22 @@ print(f"\nFinal answer: {result.answer}")
 print("\nStructured trace (result.steps): what you'd log in production:")
 for i, s in enumerate(result.steps, start=1):
     preview = " ".join(s.result.split())[:70]
-    print(f"  {i}. {s.tool}({s.arguments})  approved={s.approved}")
+    flags = f"status={s.status} approved={s.approved}"
+    if s.replayed:
+        flags += " replayed=True"
+    print(f"  {i}. {s.tool}({s.arguments})  {flags}")
     print(f"     -> {preview}")
+    print(f"     args sha256={s.arguments_sha256[:12]}...")
 
 print(
     "\nNo trace, no debugging: an agent's value and its failures both live in the "
     "sequence of tool calls. Capture them, for humans now and for evals later."
+)
+print(
+    "\nRead `status` first: it is the field that says WHY, and it is what an eval "
+    "or an alert should key on instead of matching error prose. `approved` answers "
+    "only 'did this clear the approval gate', so a call rejected earlier (a bad "
+    "schema, an unknown tool) also shows approved=False without a human ever "
+    "having said no. The digests let you prove two runs sent the same arguments "
+    "without copying customer data into your logs."
 )

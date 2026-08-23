@@ -285,7 +285,7 @@ the agent loop. When should you *not* reach for an agent?
 
 When you can already **draw the flowchart**. If the steps are known, a workflow
 (classify → route → handle, orchestrated in code) is cheaper, more predictable, and
-easier to test. An agent earns its cost and unpredictability only when the path is
+easier to test. An agent is worth its cost and unpredictability only when the path is
 genuinely open-ended.
 </details>
 
@@ -380,7 +380,7 @@ is local or served across the world?
 
 MCP adds **discovery and a wire format**: `tools/list` advertises those same three
 things from another process (another team, another language, another machine), and
-`tools/call` invokes one by name with JSON arguments, with no bespoke glue per tool.
+`tools/call` invokes one by name with JSON arguments, with no hand-written glue per tool.
 What never changes: the *model* still never runs anything. It only ever sees the
 menu entry and emits a request. Now even your client doesn't hold the
 implementation; the server does. (For the protocol's other primitives, like resources,
@@ -398,8 +398,8 @@ any schema that has not closed the door on undeclared fields. That is deliberate
 a schema this loose would let the model slip in an argument nobody described, and
 the repo would rather fail loudly at wiring time than silently forward it.
 `seal_schema()` is the fix, and `as_tools()` applies it to every descriptor as it
-comes off the wire. Note the cost, which is real: if that server quietly accepts a
-field it never declared, sealing rejects a call it would have honored.
+comes off the wire. Note the cost, which is real: if that server accepts a
+field it never declared and says nothing, sealing rejects a call it would have honored.
 </details>
 
 **Recall.** The server in this repo runs every `tools/call` through the same

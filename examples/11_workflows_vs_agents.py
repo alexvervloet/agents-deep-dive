@@ -18,7 +18,7 @@ This example does the SAME customer-support task both ways:
   - the AGENT loop: hand the model tools and let it decide.
 
 Both work here, which is exactly the point. The workflow is the right default;
-the agent earns its keep only when the task is genuinely open-ended.
+the agent is worth its cost only when the task is genuinely open-ended.
 
 Run it:
 

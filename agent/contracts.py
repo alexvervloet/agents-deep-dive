@@ -150,7 +150,7 @@ def seal_schema(schema: dict) -> dict:
     than by weakening the executor for every tool.
 
     Sealing only narrows what the model may propose, which is the safe direction.
-    The tradeoff is real: if a remote tool quietly accepts a field it never
+    The tradeoff is real: if a remote tool accepts a field it never
     declared, a sealed schema rejects a call that server would have honored. That
     is the price of refusing to forward arguments nobody described, and it is a
     better failure than forwarding an injected field to someone else's system.

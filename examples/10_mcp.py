@@ -9,7 +9,7 @@ agents often can't: the tool lives in another team's service, a vendor's product
 or a process in another language. MCP (Model Context Protocol) is the standard
 that makes that work: the tool *server* advertises what it offers, and the agent
 *client* discovers and calls those tools over one agreed wire format, with no
-bespoke glue per tool.
+hand-written glue per tool.
 
 This script is the client. It launches `agent/mcp_server.py` as a subprocess and
 speaks MCP to it: `tools/list` to discover what's there, then `tools/call` to run

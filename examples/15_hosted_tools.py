@@ -2,8 +2,8 @@
 Example 15: a provider-hosted tool: the loop never sees it.
 
 Every tool in examples 01–14 is *client-executed*: the model asks to call it,
-YOUR loop runs the function, and you feed the result back. That round-trip 
-tool_use out, tool_result in, is the whole mechanic this repo is built on.
+YOUR loop runs the function, and you feed the result back. That round-trip of
+tool_use out and tool_result in is the whole mechanic this repo is built on.
 
 A **hosted** (server-side) tool is different in kind. You *declare* it, and the
 provider runs it on its own infrastructure, *inside the turn*. You send one

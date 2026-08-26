@@ -14,7 +14,7 @@ the loop:
     revise. Catches the half-answers and arithmetic slips a single pass misses.
 
 This script plans a multi-part task, executes it with the tool-using loop, then
-reflects and (if needed) revises. (The critic here is the model judging itself 
+reflects and (if needed) revises. (The critic here is the model judging itself,
 useful but fallible; the strongest version checks against a real verifier or tests,
 see the prompt-engineering 'reflexion' lesson and the evals dive.)
 

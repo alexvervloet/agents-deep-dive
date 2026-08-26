@@ -4,7 +4,7 @@ Example 01: what a tool is (offline, no API call).
 Before any agent, understand the tool. A tool has two faces:
 
   - to YOUR code, it's a plain Python function (here: calculator, search_notes).
-  - to the MODEL, it's just a name, a description, and a JSON Schema of inputs 
+  - to the MODEL, it's just a name, a description, and a JSON Schema of inputs;
     the model never sees your function body, only this "menu entry," and uses it
     to decide when and how to call.
 

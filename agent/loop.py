@@ -14,7 +14,7 @@ That's `run_agent` below, in ~20 lines. Everything else in this repo (multiple
 tools, error recovery, approval gates, tracing, memory, sub-agents) is a small
 addition to this loop, not a new concept.
 
-Three pieces of control logic worth seeing here, because they're what make a loop
+Four pieces of control logic worth seeing here, because they're what make a loop
 safe instead of a runaway:
 
   - max_steps: a hard ceiling so a confused model can't loop forever.

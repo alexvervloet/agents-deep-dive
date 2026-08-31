@@ -1,8 +1,8 @@
 # Loads variables from a .env file (like OPENAI_API_KEY) into the environment.
-python-dotenv>=1.0.0
+python-dotenv>=1.0.0,<2
 
 # rich renders the agent's step-by-step trace and the capstone's output.
-rich>=13.0.0
+rich>=13.0.0,<16
 
 # jsonschema enforces tool input contracts locally before any function runs.
 jsonschema>=4.0,<5

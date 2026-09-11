@@ -1,6 +1,6 @@
 # Exercises: make the learning stick
 
-Reading code teaches you less than *predicting* what it will do and then checking.
+Reading code teaches you less than *predicting* what it'll do and then checking.
 This file turns each section of the [README](README.md) into a few quick
 active-recall prompts.
 
@@ -172,7 +172,7 @@ before running the test.
 The amount becomes `schema_validation`, the role becomes `not_authorized`, and
 the tenant becomes `trusted_context_forgery`; none invokes the callable. A new
 request ID changes the replay scope, so an otherwise allowed call executes a new
-effect. These independent perturbations prove the decision did not derive its
+effect. These independent perturbations prove the decision didn't derive its
 expected result from the proposal itself.
 </details>
 
@@ -185,7 +185,7 @@ stored result, run the new one, or neither?
 
 Neither: it denies with `idempotency_key_reuse`. Returning the stored result would
 answer a question nobody asked and bury the second attempt (the audit record would
-carry the *first* call's argument digest, so the log would not even show it
+carry the *first* call's argument digest, so the log wouldn't even show it
 happened). Running it would defeat the point of the key. A settled key is a promise
 about one specific payload, which is why the executor compares argument digests and
 not just the key. Stripe's API behaves the same way for the same reason.
@@ -201,7 +201,7 @@ A timeout says the caller stopped waiting, not that the effect failed; the tool
 may have committed just before the connection disappeared. An automatic retry
 could duplicate it. Production needs a durable idempotency key enforced
 transactionally by the sink (plus coordination across workers), because an
-in-process bounded cache disappears on restart and does not stop concurrent
+in-process bounded cache disappears on restart and doesn't stop concurrent
 workers from racing.
 </details>
 
@@ -215,7 +215,7 @@ between the two `Step` records, and how many events should reach the sink?
 
 <details><summary>▸ Answer</summary>
 
-Only `replayed` changes: it is `False` for the dispatch and `True` for the cached
+Only `replayed` changes: it's `False` for the dispatch and `True` for the cached
 retry. Both steps keep `status=ok`, `approval=approved`, and the same argument and
 output digests because they describe the same settled operation. Exactly one event
 reaches the sink.
@@ -394,7 +394,7 @@ valid JSON Schema and describes every field it wants, but never mentions
 <details><summary>▸ Answer</summary>
 
 `ToolExecutor` raises `ValueError` before a single model call, because it refuses
-any schema that has not closed the door on undeclared fields. That is deliberate:
+any schema that hasn't closed the door on undeclared fields. That's deliberate:
 a schema this loose would let the model slip in an argument nobody described, and
 the repo would rather fail loudly at wiring time than silently forward it.
 `seal_schema()` is the fix, and `as_tools()` applies it to every descriptor as it
@@ -409,8 +409,8 @@ field it never declared and says nothing, sealing rejects a call it would have h
 
 Because neither end can verify the other did it. The server has no idea whose model
 is on the other end of the pipe, which prompt it was given, or whether that prompt
-came off an injected web page; "my client validated" is not a fact a server can
-check. Symmetrically, the client cannot audit the server's code. Each side enforces
+came off an injected web page; "my client validated" isn't a fact a server can
+check. Symmetrically, the client can't audit the server's code. Each side enforces
 the contract at its own trust boundary, which is what makes them boundaries.
 Skipping either is how an internal service ends up trusting arguments that
 originated in text a stranger wrote.

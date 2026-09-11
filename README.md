@@ -15,8 +15,8 @@ converge. The first two teach the API calls
 how you ask, [RAG](https://github.com/alexvervloet/rag-deep-dive) adds retrieval, and
 [evals](https://github.com/alexvervloet/evals-deep-dive) measures quality. An agent uses
 all of it. It calls the API in a loop, its tools can include RAG retrieval, and its
-step-by-step behavior is exactly what you would evaluate. Tools plus a loop is the whole
-pattern under "AI agents", and once you have written it by hand the frameworks stop being
+step-by-step behavior is exactly what you'd evaluate. Tools plus a loop is the whole
+pattern under "AI agents", and once you've written it by hand the frameworks stop being
 magic.
 
 Like its siblings, walk through it. Each section ends with something to run, and examples
@@ -30,7 +30,7 @@ predict-then-run prompt for each section.
 > **An agent is a loop. The model picks a tool, you run it, you feed the result back,
 > and you repeat until it's done.**
 
-That is the entire concept. A model on its own can only produce text. Give it tools and a
+That's the entire concept. A model on its own can only produce text. Give it tools and a
 loop and it can take actions, observe results, and decide what to do next. Everything in
 this repo, from multiple tools to error handling, approval, memory, and sub-agents, is a
 small addition to that loop rather than a new idea. Hold onto it and none of this feels
@@ -102,7 +102,7 @@ and accepting an untrusted request are two different jobs.
 ## 3. One tool call
 
 The core mechanic in isolation. Hand the model tools and a question, and instead of
-answering it replies "please run `calculator` with `expression='23 * 47'`." That is a
+answering it replies "please run `calculator` with `expression='23 * 47'`." That's a
 request, and you run it.
 
 ```bash
@@ -127,7 +127,7 @@ secrun python examples/03_agent_loop.py
 `run_agent` in [agent/loop.py](agent/loop.py) keeps that control flow small and routes
 every requested action through the contract boundary. Watch the trace. Given a multi-step
 question, the model chains calls, using each result to decide the next, which a single
-call cannot do. This is the example to really understand. Everything after it is a small
+call can't do. This is the example to really understand. Everything after it's a small
 addition.
 
 ---
@@ -160,7 +160,7 @@ secrun python examples/05_limits_and_errors.py
 - **Error recovery** sends the error text back to the model as the result when a tool
   raises, so it can adapt instead of crashing the program.
 
-Those two are the difference between a toy loop and one you would run unattended.
+Those two are the difference between a toy loop and one you'd run unattended.
 
 ---
 
@@ -211,7 +211,7 @@ replaying its request returns the stored outcome without issuing another refund.
 
 [agent/contracts.py](agent/contracts.py) is the reusable implementation. Its
 in-process replay cache deliberately stores even errors that happened after dispatch,
-because a timeout or connection failure cannot tell you whether the remote effect
+because a timeout or connection failure can't tell you whether the remote effect
 committed. A settled key is a promise about one specific payload, so a repeat carrying
 different arguments is denied with `idempotency_key_reuse` rather than answered from the
 cache. Otherwise the audit record for the second attempt would carry the first call's
@@ -267,7 +267,7 @@ the earlier turn is still in the history you resend.
 ## 10. Agents that call agents
 
 As tasks grow, one agent with twenty tools gets unfocused. Delegate instead. A sub-agent
-is not a new mechanism. It is a tool whose function happens to run its own loop, with its
+isn't a new mechanism. It's a tool whose function happens to run its own loop, with its
 own prompt and its own toolset.
 
 ```bash
@@ -276,7 +276,7 @@ secrun python examples/09_multi_agent.py
 
 An orchestrator delegates factual questions to a `research` sub-agent, whose only tool is
 `search_notes`, and does math itself. To the orchestrator, `research` is a tool.
-Underneath, it's a whole second loop. That is how large agent systems get built: focused
+Underneath, it's a whole second loop. That's how large agent systems get built: focused
 agents calling each other through the same tool interface.
 
 ---
@@ -316,7 +316,7 @@ The loop is the core. These are the patterns you put on top of it in real system
 "Agent" isn't always the answer. If you can draw the flowchart, build a workflow: fixed
 steps you orchestrate in code, classify then route then handle. It's cheaper, more
 predictable, and easier to test. Reach for an agent, where the model drives the loop, only
-when the path genuinely cannot be known up front. The example does one support task both
+when the path genuinely can't be known up front. The example does one support task both
 ways.
 ```bash
 secrun python examples/11_workflows_vs_agents.py
@@ -359,8 +359,8 @@ runs it inside the turn, on its own infrastructure. You send one request and get
 answer, with no tool_use and tool_result round-trip for your loop to manage, because your
 loop isn't in the middle. The example asks a question with hosted web search declared and
 shows the gap. Search really ran, because the provider did it, and your code handled zero
-tool rounds. You trade control for plumbing. A hosted tool cannot be gated the way Section
-7 gates one, cannot be custom-logged, and cannot be sandboxed, but it needs no glue. Real
+tool rounds. You trade control for plumbing. A hosted tool can't be gated the way Section
+7 gates one, can't be custom-logged, and can't be sandboxed, but it needs no glue. Real
 agents mix both.
 ```bash
 secrun python examples/15_hosted_tools.py       # small real call; degrades cleanly if the tool isn't enabled
@@ -374,7 +374,7 @@ Every example so far imported its tools straight from `agent/tools.py`. Real age
 can't, because the tool lives in another team's service, a vendor's product, or a process
 written in another language. **MCP, the Model Context Protocol**, is the standard that
 makes that work. A tool server advertises what it offers, and the agent client discovers
-and calls those tools over one agreed wire format, with no hand-written glue per tool. It is
+and calls those tools over one agreed wire format, with no hand-written glue per tool. It's
 the same idea as Section 2, where a tool is a name, a description, and a JSON Schema, now
 spoken over a protocol instead of an import.
 
@@ -388,7 +388,7 @@ python examples/10_mcp.py
 
 The conversion step in the client is where it pays off. Each remote tool descriptor
 becomes an ordinary `Tool` object, so an MCP-served tool drops into the loop from Section
-4 unchanged. The agent cannot tell a local function from a tool served across the world.
+4 unchanged. The agent can't tell a local function from a tool served across the world.
 [agent/mcp_server.py](agent/mcp_server.py) is the server, serving the very same
 `calculator` and `search_notes` functions over the wire, and
 [examples/10_mcp.py](examples/10_mcp.py) is the client.
@@ -397,22 +397,22 @@ A protocol moves the tool and not the trust. Section 7A's contract applies twice
 once on each side of the pipe, and both directions are easy to skip.
 
 - **The client seals what it adopts.** A discovered schema was written by someone else,
-  and MCP does not require `additionalProperties: false`, so most schemas in the wild
+  and MCP doesn't require `additionalProperties: false`, so most schemas in the wild
   leave it unset. `ToolExecutor` refuses a schema that loose on purpose, because the
   omission should be impossible to ignore. `seal_schema()` closes a copy at the point of
   adoption, which is where a human is actually deciding to trust this server. The tradeoff
   is real and worth stating. Sealing can reject a call a sloppy server would have
-  accepted, because it refuses to forward fields nobody declared. That is the better
+  accepted, because it refuses to forward fields nobody declared. That's the better
   failure.
 - **The server distrusts its clients.** The one in this repo runs every `tools/call`
   through the same `ToolExecutor` before dispatch, so a client that invents an argument
   gets a contract denial rather than a Python call. Your server has no idea whose model is
   on the other end, or whether that model just read a prompt-injected web page. "The
-  client already validated" is not something a server can ever know.
+  client already validated" isn't something a server can ever know.
 
 `tests/test_mcp_contracts.py` holds both halves down.
 
-In production you would use the official `mcp` SDK and a real transport such as HTTP or
+In production you'd use the official `mcp` SDK and a real transport such as HTTP or
 SSE, and your provider can often skip the client entirely. The Claude API connects to
 remote MCP servers for you through its MCP connector, and the OpenAI stack has an
 equivalent. The protocol shape you just built by hand is exactly what those use.
@@ -453,14 +453,14 @@ secrun python examples/17_memory_tool.py    # run it twice
 
 Section 9's memory is the message list, which is the right default and dies with the
 process. The memory tool is the other kind. Claude gets a `/memories` directory it reads
-and writes through tool calls, and because it is a client-side tool, you implement the
+and writes through tool calls, and because it's a client-side tool, you implement the
 storage and decide how long it lives.
 
-Declaring the tool does not give you storage. It tells Claude the commands exist. That is
+Declaring the tool doesn't give you storage. It tells Claude the commands exist. That's
 what lets you scope memory per user and delete it on request.
 
 The example enforces two rules rather than merely mentioning them. Validate every path.
-They are model-generated, the agent reads untrusted content (see the
+They're model-generated, the agent reads untrusted content (see the
 [Prompt Injection dive](https://github.com/alexvervloet/prompt-injection-deep-dive)), and
 a six-line guard is the difference between a memory directory and an arbitrary file write.
 And never store secrets. Memory is replayed verbatim into future contexts, so a key
@@ -622,4 +622,4 @@ And the whole series lands in one codebase in the
 [capstone](https://github.com/alexvervloet/deep-dive-capstone): a codebase Q&A tool
 built step by step, one tag per dive.
 
-**You are here: #6, Agents.**
+**You're here: #6, Agents.**

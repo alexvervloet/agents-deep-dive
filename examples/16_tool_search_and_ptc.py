@@ -64,7 +64,7 @@ import anthropic  # noqa: E402
 client = anthropic.Anthropic()
 
 SEARCH_MODEL = "claude-haiku-4-5"
-PTC_MODEL = "claude-sonnet-4-6"  # PTC needs 4.5+; Haiku 4.5 returns a 400
+PTC_MODEL = "claude-sonnet-5"  # PTC needs Sonnet/Opus 4.5+; Haiku 4.5 returns a 400
 
 # A catalogue big enough to be annoying if you sent all of it every turn. In a
 # real agent this is where your thirty CRM/billing/calendar tools would live.

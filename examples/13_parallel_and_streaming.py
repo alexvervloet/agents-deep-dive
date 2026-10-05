@@ -38,7 +38,7 @@ agent.ensure_ready()
 print(f"Provider: {agent.describe()}\n")
 
 MODELS = {
-    "openai": "gpt-5.4-nano",
+    "openai": "gpt-6-luna",
     "claude": "claude-haiku-4-5",
 }  # mirrors agent/providers.py
 
@@ -102,6 +102,7 @@ def stream_final(system: str, history: list):
 
         stream = OpenAI().chat.completions.create(
             model=MODELS["openai"],
+            reasoning_effort="none",  # luna reasons by default; see agent/providers.py
             messages=[{"role": "system", "content": system}, *history],
             stream=True,
         )

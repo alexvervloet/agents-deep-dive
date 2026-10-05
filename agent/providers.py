@@ -27,7 +27,11 @@ import sys
 from dataclasses import dataclass
 from functools import lru_cache
 
-_OPENAI_CHAT = "gpt-5.4-nano"
+_OPENAI_CHAT = "gpt-6-luna"
+# Luna reasons by default, and on chat completions it rejects function tools
+# unless reasoning is off (a 400, not a weaker answer). Every agent turn sends
+# tools, so every chat call here sends this.
+_OPENAI_REASONING_OFF = {"reasoning_effort": "none"}
 _CLAUDE_CHAT = "claude-haiku-4-5"
 _KEYS = {"openai": ["OPENAI_API_KEY"], "claude": ["ANTHROPIC_API_KEY"]}
 
@@ -170,7 +174,8 @@ def run_turn(system: str, history: list, tool_schema: list) -> Turn:
     if p == "openai":
         messages = [{"role": "system", "content": system}, *history]
         resp = _openai_client().chat.completions.create(
-            model=_OPENAI_CHAT, messages=messages, tools=tool_schema or None  # type: ignore[arg-type]
+            model=_OPENAI_CHAT, messages=messages, tools=tool_schema or None,  # type: ignore[arg-type]
+            **_OPENAI_REASONING_OFF,
         )
         msg = resp.choices[0].message
         calls = []
@@ -227,7 +232,8 @@ def stream_turn(system: str, history: list, tool_schema: list, on_text=None) -> 
     if p == "openai":
         messages = [{"role": "system", "content": system}, *history]
         stream = _openai_client().chat.completions.create(  # type: ignore[call-overload]
-            model=_OPENAI_CHAT, messages=messages, tools=tool_schema or None, stream=True  # type: ignore[arg-type]
+            model=_OPENAI_CHAT, messages=messages, tools=tool_schema or None, stream=True,  # type: ignore[arg-type]
+            **_OPENAI_REASONING_OFF,
         )
         text_parts: list[str] = []
         acc: dict[int, dict] = {}  # tool calls arrive in fragments, keyed by index
@@ -323,7 +329,8 @@ def hosted_web_search(query: str) -> HostedResult:
         # text directly. Search steps appear as `web_search_call` items in the
         # output (we count them) but you never handle a tool result yourself.
         resp = _openai_client().responses.create(
-            model=_OPENAI_CHAT, tools=[{"type": "web_search"}], input=query
+            model=_OPENAI_CHAT, tools=[{"type": "web_search"}], input=query,
+            reasoning={"effort": "none"},  # same reason as above, Responses spelling
         )
         calls = sum(1 for item in resp.output if getattr(item, "type", "") == "web_search_call")
         return HostedResult(text=resp.output_text, server_tool_calls=calls)

@@ -12,8 +12,15 @@ built into run_agent:
      back to the model *as the tool result*. The model reads it and adapts (tries
      different inputs, or explains the problem) instead of the whole program dying.
 
-This example shows both. (Division by zero makes the calculator raise; a tiny
-max_steps cuts a multi-step task short.)
+This example shows both. (A hidden division by zero makes the calculator raise;
+a tiny max_steps cuts a multi-step task short.)
+
+Why "hidden": the obvious version, "What is 10 divided by 0?", never reaches the
+tool. Every model we tried answers that one from memory, so no error happens and
+there's nothing to recover from. 4096 / (1728 - 12**3) looks like ordinary
+arithmetic, so the model calls the calculator, and 12**3 is 1728. Measured
+2026-10-05: the tool raised on 12 of 12 runs across gpt-5.4-nano, gpt-6-luna and
+claude-haiku-4-5.
 
 Run it:
 
@@ -34,11 +41,12 @@ print(f"Provider: {agent.describe()}\n")
 
 SYSTEM = "You are a careful assistant. Use the calculator for arithmetic."
 
-# 1. Error recovery: the calculator raises on 10/0; the error goes back to the
-#    model, which then explains rather than crashing.
-print("=== error recovery (10 / 0) ===")
+# 1. Error recovery: the denominator is zero, which the model only finds out when
+#    the calculator raises. The error goes back to the model, which then explains
+#    rather than crashing.
+print("=== error recovery (4096 / (1728 - 12**3)) ===")
 r1 = agent.run_agent(
-    SYSTEM, "What is 10 divided by 0?", [agent.CALCULATOR], tracer=agent.Tracer()
+    SYSTEM, "What is 4096 / (1728 - 12**3)?", [agent.CALCULATOR], tracer=agent.Tracer()
 )
 print(f"Final answer: {r1.answer}")
 errored = any(s.result.startswith("Error") for s in r1.steps)

@@ -580,7 +580,7 @@ Run `secrun python check_setup.py` first; it catches most problems. Then, by sym
 | The agent answers math wrong / makes things up | It's not using its tools. Strengthen the system prompt ("use the calculator for arithmetic; don't guess product facts"). Tool *descriptions and instructions* drive tool use. |
 | "(stopped: reached the step limit...)" | The task needed more steps than `max_steps`. Raise it (`--max-steps` on the capstone), or simplify the task. |
 | A dangerous tool returns `approval_required` | Pass an `approve` callback, or use `--yes` in the capstone when you intentionally want to allow it. Dangerous tools fail closed without a callback. |
-| `SyntaxError` / odd type errors on startup | You're likely on Python 3.9 or older; this repo needs 3.10+. `check_setup.py` confirms your version. |
+| `SyntaxError` / odd type errors on startup | You're likely on Python 3.10 or older; this repo needs 3.11+. `check_setup.py` confirms your version. |
 
 Still stuck? Every file is small and self-contained. Open it, read the docstring
 at the top, and run it directly. The loop in `agent/loop.py` is the whole story.
